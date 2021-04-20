@@ -1,7 +1,7 @@
 import logging
 
 from MottoBotto import MottoBotto
-from config import read_config, get_discord_token
+from config import read_config, get_discord_token, get_channels
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("MottoBotto")
@@ -17,6 +17,8 @@ except KeyError as error:
     log.error(f'Config missing required key: {error}')
     exit(1)
 
-client = MottoBotto()
+include_channels, exclude_channels = get_channels()
+
+client = MottoBotto(include_channels, exclude_channels)
 
 client.run(discord_token)

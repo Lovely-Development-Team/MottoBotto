@@ -17,3 +17,21 @@ def read_config() -> bool:
 
 def get_discord_token() -> str:
     return config['authentication']['discord']
+
+
+def get_channels() -> (str, str):
+
+    try:
+        include = config.get('channels', 'include')
+    except (configparser.NoSectionError, configparser.NoOptionError):
+        include = ""
+
+    try:
+        exclude = config.get('channels', 'exclude')
+    except (configparser.NoSectionError, configparser.NoOptionError):
+        exclude = ""
+
+    return (
+        tuple(x.strip() for x in include.split(",")) if include else None,
+        tuple(x.strip() for x in exclude.split(",")) if exclude else None,
+    )
