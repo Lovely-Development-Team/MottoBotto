@@ -82,6 +82,9 @@ class MottoBotto(discord.Client):
             member_data = {"Name": member.display_name, "Discord ID": str(member.id)}
             member_record = self.members.insert(member_data)
             log.debug(f"Added member {member_record} to AirTable")
+        elif member_record['fields']['Name'] != member.display_name:
+            log.debug("Updating display name")
+            self.members.update(member_record['id'], {'Name': member.display_name })
 
         return member_record
 
