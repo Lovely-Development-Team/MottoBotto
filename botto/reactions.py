@@ -11,7 +11,7 @@ log.setLevel(logging.DEBUG)
 async def skynet_prevention(botto: MottoBotto, message: Message):
     log.info(f"{message.author} attempted to activate Skynet!")
     await botto.add_reaction(message, "skynet", "❌")
-    if botto.should_reply:
+    if botto.config["should_reply"]:
         await message.reply("Skynet prevention")
 
 
@@ -20,13 +20,18 @@ async def not_reply(botto: MottoBotto, message: Message):
         f"Suggestion from {message.author} was not a reply (Message ID {message.id})"
     )
     await botto.add_reaction(message, "unknown", "❓")
-    if botto.should_reply:
+    if botto.config["should_reply"]:
         await message.reply("I see no motto!")
 
 
 async def fishing(botto: MottoBotto, message: Message):
-    log.info(f'Motto fishing from: "{message.author}"')
+    log.info(f"Motto fishing from: {message.author}")
     await botto.add_reaction(message, "fishing", "🎣")
+
+
+async def invalid(botto: MottoBotto, message: Message):
+    log.info(f"Motto from {message.author} is invalid according to rules.")
+    await botto.add_reaction(message, "invalid", "🙅")
 
 
 async def duplicate(botto: MottoBotto, message: Message):
@@ -37,6 +42,6 @@ async def duplicate(botto: MottoBotto, message: Message):
 async def stored(botto: MottoBotto, message: Message, motto_message: Message):
     await botto.add_reaction(message, "success", "📥")
     log.debug("Reaction added")
-    if botto.should_reply:
+    if botto.config["should_reply"]:
         await message.reply(f'"{motto_message.content}" will be considered!')
     log.debug("Reply sent")
