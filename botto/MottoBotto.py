@@ -31,6 +31,12 @@ class MottoBotto(discord.Client):
             await message.reply('I see no motto!')
         else:
             motto_message = message.reference.resolved
+            
+            if motto_message.author == message.author:
+                log.info(f'Motto fishing from: "{motto_message.author}"')
+                await message.add_reaction("🎣")
+                return
+            
             log.info(f'Motto suggestion incoming: "{motto_message.content}"')
             await message.add_reaction('👾')
             log.debug("Reaction added")
