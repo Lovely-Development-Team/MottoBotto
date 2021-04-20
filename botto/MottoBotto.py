@@ -9,13 +9,19 @@ log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
 
 
+TRIGGER_PHRASES = (
+    "!motto",
+    "Accurate. New motto?",
+)
+
+
 class MottoBotto(discord.Client):
 
     async def on_ready(self):
         log.info('We have logged in as {0.user}'.format(self))
 
     async def on_message(self, message: Message):
-        if not message.content.startswith('!motto'):
+        if message.content not in TRIGGER_PHRASES:
             return
 
         if is_botto(message, self.user):
