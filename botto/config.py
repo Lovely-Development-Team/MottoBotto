@@ -17,3 +17,6 @@ def read_config() -> bool:
 
 def get_discord_token() -> str:
     return config['authentication']['discord']
+
+def get_airtable_tokens() -> (str, str):
+    return config['authentication']['airtable_base'], config['authentication']['airtable_key']
