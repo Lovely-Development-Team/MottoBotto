@@ -1,7 +1,9 @@
 import logging
 
+from airtable import Airtable
+
 from MottoBotto import MottoBotto
-from config import read_config, get_discord_token
+from config import read_config, get_discord_token, get_airtable_tokens
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("MottoBotto")
@@ -13,10 +15,13 @@ if not read_config():
 discord_token = None
 try:
     discord_token = get_discord_token()
+    airtable_base_key, airtable_api_key = get_airtable_tokens()
 except KeyError as error:
     log.error(f'Config missing required key: {error}')
     exit(1)
 
-client = MottoBotto()
+mottos = Airtable(airtable_base_key, 'mottos', airtable_api_key)
+members = Airtable(airtable_base_key, 'members', airtable_api_key)
 
+client = MottoBotto(mottos, members)
 client.run(discord_token)

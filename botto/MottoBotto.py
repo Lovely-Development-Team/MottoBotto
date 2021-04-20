@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 import discord
 from discord import Message
@@ -11,8 +12,15 @@ log.setLevel(logging.DEBUG)
 
 class MottoBotto(discord.Client):
 
+    def __init__(self, mottos, members):
+        super(MottoBotto, self).__init__()
+
+        self.mottos = mottos
+        self.members = members
+
     async def on_ready(self):
         log.info('We have logged in as {0.user}'.format(self))
+
 
     async def on_message(self, message: Message):
         if not message.content.startswith('!motto'):
@@ -30,3 +38,11 @@ class MottoBotto(discord.Client):
             log.debug("Reaction added")
             await message.reply(f'"{motto_message.content}" will be considered!')
             log.debug("Reply sent")
+            motto_data = {'Motto': motto_message.content,
+                          "Message ID": str(motto_message.id),
+                          "Date":motto_message.created_at.isoformat(),
+                          # "Member":motto_message.author.display_name,
+                          # "Nominated By": message.author.display_name
+                          }
+            self.mottos.insert(motto_data)
+            log.debug("Added Motto to AirTable")
