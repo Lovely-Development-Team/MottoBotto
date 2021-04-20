@@ -3,7 +3,14 @@ import logging
 from airtable import Airtable
 
 from MottoBotto import MottoBotto
-from config import read_config, get_discord_token, get_channels, get_airtable_tokens, get_reactions
+from config import (
+    read_config,
+    get_discord_token,
+    get_channels,
+    get_airtable_tokens,
+    get_reactions,
+    get_should_reply,
+)
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("MottoBotto")
@@ -24,6 +31,9 @@ mottos = Airtable(airtable_base_key, "motto", airtable_api_key)
 members = Airtable(airtable_base_key, "member", airtable_api_key)
 include_channels, exclude_channels = get_channels()
 reactions = get_reactions()
+should_reply = get_should_reply()
 
-client = MottoBotto(include_channels, exclude_channels, reactions, mottos, members)
+client = MottoBotto(
+    include_channels, exclude_channels, reactions, mottos, members, should_reply
+)
 client.run(discord_token)

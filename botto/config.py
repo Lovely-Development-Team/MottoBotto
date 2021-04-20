@@ -1,5 +1,6 @@
 import configparser
 import logging
+from typing import Optional
 
 config = configparser.ConfigParser()
 
@@ -26,15 +27,14 @@ def get_airtable_tokens() -> (str, str):
     )
 
 
-def get_channels() -> (str, str):
-
+def get_channels() -> (Optional[tuple], Optional[tuple]):
     try:
-        include = config.get('channels', 'include')
+        include = config.get("channels", "include")
     except (configparser.NoSectionError, configparser.NoOptionError):
         include = ""
 
     try:
-        exclude = config.get('channels', 'exclude')
+        exclude = config.get("channels", "exclude")
     except (configparser.NoSectionError, configparser.NoOptionError):
         exclude = ""
 
@@ -49,3 +49,10 @@ def get_reactions() -> dict:
         return dict(config["reactions"].items())
     except configparser.NoSectionError:
         return {}
+
+
+def get_should_reply() -> bool:
+    try:
+        return config.getboolean("general", "should_reply")
+    except (configparser.NoSectionError, configparser.NoOptionError):
+        return True

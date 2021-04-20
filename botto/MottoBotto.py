@@ -1,8 +1,11 @@
 import logging
+from typing import Optional
 
 import discord
+from airtable import Airtable
 from discord import Message
 
+import reactions
 from message_checks import is_botto
 
 log = logging.getLogger("MottoBotto")
@@ -16,12 +19,22 @@ TRIGGER_PHRASES = (
 
 
 class MottoBotto(discord.Client):
-    def __init__(self, include_channels, exclude_channels, reactions, mottos, members):
+    def __init__(
+        self,
+        include_channels: Optional[tuple],
+        exclude_channels: Optional[tuple],
+        reactions,
+        mottos: Airtable,
+        members: Airtable,
+        should_reply: bool = True,
+    ):
         self.include_channels = include_channels or ()
         self.exclude_channels = exclude_channels or ()
         self.reactions = reactions
         self.mottos = mottos
         self.members = members
+        self.should_reply = should_reply
+        log.info("Replies are enabled" if self.should_reply else "Replies are disabled")
         super(MottoBotto, self).__init__()
 
     async def on_ready(self):
@@ -44,51 +57,11 @@ class MottoBotto(discord.Client):
             return
 
         if is_botto(message, self.user):
-            log.info(f"{message.author} attempted to activate Skynet!")
-            await self.add_reaction(message, "skynet", "❌")
-            await message.reply("Skynet prevention")
+            await reactions.skynet_prevention(self, message)
         elif not message.reference:
-            await self.add_reaction(message, "unknown", "❓")
-            await message.reply("I see no motto!")
+            await reactions.not_reply(self, message)
         else:
-            motto_message = message.reference.resolved
-
-            if motto_message.author == message.author:
-                log.info(f'Motto fishing from: "{motto_message.author}"')
-                await self.add_reaction(message, "fishing", "🎣")
-                return
-
-            log.info(f'Motto suggestion incoming: "{motto_message.content}"')
-
-            actual_motto = motto_message.content
-            filter_motto = actual_motto.replace("'", r"\'")
-
-            filter_formula = f"REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', '') = REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', '')"
-            log.debug("Searching with filter %r", filter_formula)
-            matching_mottos = self.mottos.get_all(filterByFormula=filter_formula)
-            if matching_mottos:
-                log.debug("Ignoring motto, it's a duplicate.")
-                await self.add_reaction(message, "repeat", "😅")
-                return
-
-            # Find the nominee and nominator
-            nominee = await self.get_or_add_member(motto_message.author)
-            nominator = await self.get_or_add_member(message.author)
-
-            motto_data = {
-                "Motto": actual_motto,
-                "Message ID": str(motto_message.id),
-                "Date": motto_message.created_at.isoformat(),
-                "Member": [nominee["id"]],
-                "Nominated By": [nominator["id"]],
-            }
-            self.mottos.insert(motto_data)
-            log.debug("Added Motto to AirTable")
-
-            await self.add_reaction(message, "success", "📥")
-            log.debug("Reaction added")
-            await message.reply(f'"{motto_message.content}" will be considered!')
-            log.debug("Reply sent")
+            await self.process_suggestion(message)
 
     async def get_or_add_member(self, member):
         member_record = self.members.match("Discord ID", member.id)
@@ -98,3 +71,38 @@ class MottoBotto(discord.Client):
             log.debug(f"Added member {member_record} to AirTable")
 
         return member_record
+
+    async def process_suggestion(self, message: Message):
+        motto_message: Message = message.reference.resolved
+
+        if motto_message.author == message.author:
+            await reactions.fishing(self, message)
+            return
+
+        log.info(f'Motto suggestion incoming: "{motto_message.content}"')
+
+        actual_motto = motto_message.content
+        filter_motto = actual_motto.replace("'", r"\'")
+
+        filter_formula = f"REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', '') = REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', '')"
+        log.debug("Searching with filter %r", filter_formula)
+        matching_mottos = self.mottos.get_all(filterByFormula=filter_formula)
+        if matching_mottos:
+            await reactions.duplicate(self, message)
+            return
+
+        # Find the nominee and nominator
+        nominee = await self.get_or_add_member(motto_message.author)
+        nominator = await self.get_or_add_member(message.author)
+
+        motto_data = {
+            "Motto": actual_motto,
+            "Message ID": str(motto_message.id),
+            "Date": motto_message.created_at.isoformat(),
+            "Member": [nominee["id"]],
+            "Nominated By": [nominator["id"]],
+        }
+        self.mottos.insert(motto_data)
+        log.debug("Added Motto to AirTable")
+
+        await reactions.stored(self, message, motto_message)
