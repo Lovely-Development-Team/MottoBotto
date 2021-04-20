@@ -49,6 +49,8 @@ def get_reactions() -> dict:
         return dict(config["reactions"].items())
     except configparser.NoSectionError:
         return {}
+
+
 def get_should_reply() -> bool:
     try:
         return config.getboolean("general", "should_reply")
