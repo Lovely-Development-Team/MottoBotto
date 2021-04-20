@@ -1,3 +1,4 @@
+import configparser
 import logging
 
 from airtable import Airtable
@@ -10,12 +11,18 @@ log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
 
 if not read_config():
-    log.error("No config file present")
+    log.error('No config file present')
     exit(1)
 discord_token = None
 try:
     discord_token = get_discord_token()
     airtable_base_key, airtable_api_key = get_airtable_tokens()
+except configparser.NoSectionError as error:
+    log.error(f'Config missing required section: {error.section}')
+    exit(1)
+except configparser.NoOptionError as error:
+    log.error(f"Config missing required key: {error.option}")
+    exit(1)
 except KeyError as error:
     log.error(f"Config missing required key: {error}")
     exit(1)
