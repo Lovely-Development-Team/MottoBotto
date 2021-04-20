@@ -31,7 +31,19 @@ class MottoBotto(discord.Client):
         else:
             motto_message = message.reference.resolved
             log.info(f'Motto suggestion incoming: "{motto_message.content}"')
-            await message.add_reaction("👾")
+
+            actual_motto = motto_message.content
+            filter_motto = actual_motto.replace("'", r"\'")
+
+            filter_formula = f"REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', '') = REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', '')"
+            log.debug("Searching with filter %r", filter_formula)
+            matching_mottos = self.mottos.get_all(filterByFormula=filter_formula)
+            if matching_mottos:
+                log.debug("Ignoring motto, it's a duplicate.")
+                await message.add_reaction("♻️")
+                return
+
+            await message.add_reaction("📥")
             log.debug("Reaction added")
             await message.reply(f'"{motto_message.content}" will be considered!')
             log.debug("Reply sent")
@@ -41,7 +53,7 @@ class MottoBotto(discord.Client):
             nominator = await self.get_or_add_member(message.author)
 
             motto_data = {
-                "Motto": motto_message.content,
+                "Motto": actual_motto,
                 "Message ID": str(motto_message.id),
                 "Date": motto_message.created_at.isoformat(),
                 "Member": [nominee["id"]],
