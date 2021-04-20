@@ -44,3 +44,8 @@ def get_channels() -> (str, str):
     )
 
 
+def get_reactions() -> dict:
+    try:
+        return dict(config["reactions"].items())
+    except configparser.NoSectionError:
+        return {}

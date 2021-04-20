@@ -16,15 +16,20 @@ TRIGGER_PHRASES = (
 
 
 class MottoBotto(discord.Client):
-    def __init__(self, include_channels, exclude_channels, mottos, members):
+    def __init__(self, include_channels, exclude_channels, reactions, mottos, members):
         self.include_channels = include_channels or ()
         self.exclude_channels = exclude_channels or ()
+        self.reactions = reactions
         self.mottos = mottos
         self.members = members
         super(MottoBotto, self).__init__()
 
     async def on_ready(self):
         log.info("We have logged in as {0.user}".format(self))
+
+    async def add_reaction(self, message, reaction_type, default=None):
+        if reaction := self.reactions.get(reaction_type, default):
+            await message.add_reaction(reaction)
 
     async def on_message(self, message: Message):
         channel_name = message.channel.name
@@ -40,15 +45,17 @@ class MottoBotto(discord.Client):
 
         if is_botto(message, self.user):
             log.info(f"{message.author} attempted to activate Skynet!")
+            await self.add_reaction(message, "skynet", "❌")
             await message.reply("Skynet prevention")
         elif not message.reference:
+            await self.add_reaction(message, "unknown", "❓")
             await message.reply("I see no motto!")
         else:
             motto_message = message.reference.resolved
 
             if motto_message.author == message.author:
                 log.info(f'Motto fishing from: "{motto_message.author}"')
-                await message.add_reaction("🎣")
+                await self.add_reaction(message, "fishing", "🎣")
                 return
 
             log.info(f'Motto suggestion incoming: "{motto_message.content}"')
@@ -61,13 +68,8 @@ class MottoBotto(discord.Client):
             matching_mottos = self.mottos.get_all(filterByFormula=filter_formula)
             if matching_mottos:
                 log.debug("Ignoring motto, it's a duplicate.")
-                await message.add_reaction("♻️")
+                await self.add_reaction(message, "repeat", "😅")
                 return
-
-            await message.add_reaction("📥")
-            log.debug("Reaction added")
-            await message.reply(f'"{motto_message.content}" will be considered!')
-            log.debug("Reply sent")
 
             # Find the nominee and nominator
             nominee = await self.get_or_add_member(motto_message.author)
@@ -82,6 +84,11 @@ class MottoBotto(discord.Client):
             }
             self.mottos.insert(motto_data)
             log.debug("Added Motto to AirTable")
+
+            await self.add_reaction(message, "success", "📥")
+            log.debug("Reaction added")
+            await message.reply(f'"{motto_message.content}" will be considered!')
+            log.debug("Reply sent")
 
     async def get_or_add_member(self, member):
         member_record = self.members.match("Discord ID", member.id)
