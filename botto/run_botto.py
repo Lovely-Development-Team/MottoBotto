@@ -13,7 +13,6 @@ if not read_config():
 discord_token = None
 try:
     discord_token = get_discord_token()
-    print(discord_token)
 except KeyError as error:
     log.error(f'Config missing required key: {error}')
     exit(1)
