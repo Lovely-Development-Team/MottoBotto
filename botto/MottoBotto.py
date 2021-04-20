@@ -3,19 +3,13 @@ from typing import Optional
 
 import discord
 from airtable import Airtable
-from discord import Message
+from discord import Message, Member
 
 import reactions
 from message_checks import is_botto
 
 log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
-
-
-TRIGGER_PHRASES = (
-    "!motto",
-    "Accurate. New motto?",
-)
 
 
 class MottoBotto(discord.Client):
@@ -29,21 +23,30 @@ class MottoBotto(discord.Client):
         self.mottos = mottos
         self.members = members
 
-        log.info("Replies are enabled" if self.config["should_reply"] else "Replies are disabled")
+        log.info(
+            "Replies are enabled"
+            if self.config["should_reply"]
+            else "Replies are disabled"
+        )
         log.info("Responding to phrases: %s", self.config["triggers"])
         super(MottoBotto, self).__init__()
 
     async def on_ready(self):
         log.info("We have logged in as {0.user}".format(self))
 
-    async def add_reaction(self, message, reaction_type, default=None):
+    async def add_reaction(
+        self, message: Message, reaction_type: str, default: str = None
+    ):
         if reaction := self.config["reactions"].get(reaction_type, default):
             await message.add_reaction(reaction)
 
     async def on_message(self, message: Message):
         channel_name = message.channel.name
 
-        if self.config["channels"]["include"] and channel_name not in self.config["channels"]["include"]:
+        if (
+            self.config["channels"]["include"]
+            and channel_name not in self.config["channels"]["include"]
+        ):
             return
         else:
             if channel_name in self.config["channels"]["exclude"]:
@@ -61,12 +64,14 @@ class MottoBotto(discord.Client):
         else:
             await self.process_suggestion(message)
 
-    def is_valid_message(self, message) -> bool:
+    def is_valid_message(self, message: Message) -> bool:
 
         message_length = len(message.content)
         message_words = len(message.content.split())
 
-        log.debug(f"Validating message against {self.config['rules']}. Length: {message_length}. Words: {message_words}")
+        log.debug(
+            f"Validating message against {self.config['rules']}. Length: {message_length}. Words: {message_words}"
+        )
 
         if message_length < self.config["rules"]["min_chars"]:
             return False
@@ -76,15 +81,15 @@ class MottoBotto(discord.Client):
             return False
         return True
 
-    async def get_or_add_member(self, member):
+    async def get_or_add_member(self, member: Member):
         member_record = self.members.match("Discord ID", member.id)
         if not member_record:
             member_data = {"Name": member.display_name, "Discord ID": str(member.id)}
             member_record = self.members.insert(member_data)
             log.debug(f"Added member {member_record} to AirTable")
-        elif member_record['fields']['Name'] != member.display_name:
+        elif member_record["fields"]["Name"] != member.display_name:
             log.debug("Updating display name")
-            self.members.update(member_record['id'], {'Name': member.display_name })
+            self.members.update(member_record["id"], {"Name": member.display_name})
 
         return member_record
 
