@@ -4,7 +4,7 @@ from typing import Optional
 
 import discord
 from airtable import Airtable
-from discord import Message
+from discord import Message, Member
 
 import reactions
 from message_checks import is_botto, is_dm
@@ -44,7 +44,9 @@ class MottoBotto(discord.Client):
     async def on_ready(self):
         log.info("We have logged in as {0.user}".format(self))
 
-    async def add_reaction(self, message, reaction_type, default=None):
+    async def add_reaction(
+        self, message: Message, reaction_type: str, default: str = None
+    ):
         if reaction := self.config["reactions"].get(reaction_type, default):
             await message.add_reaction(reaction)
 
@@ -76,7 +78,7 @@ class MottoBotto(discord.Client):
         else:
             await self.process_suggestion(message)
 
-    def is_valid_message(self, message) -> bool:
+    def is_valid_message(self, message: Message) -> bool:
 
         message_length = len(message.content)
         message_words = len(message.content.split())
@@ -99,7 +101,7 @@ class MottoBotto(discord.Client):
             return False
         return True
 
-    async def get_or_add_member(self, member):
+    async def get_or_add_member(self, member: Member):
         member_record = self.members.match("Discord ID", member.id)
         if not member_record:
             member_data = {"Name": member.display_name, "Discord ID": str(member.id)}
