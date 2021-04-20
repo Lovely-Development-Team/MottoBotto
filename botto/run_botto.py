@@ -21,7 +21,7 @@ except KeyError as error:
     exit(1)
 
 mottos = Airtable(airtable_base_key, "mottos", airtable_api_key)
-members = Airtable(airtable_base_key, "members", airtable_api_key)
+members = Airtable(airtable_base_key, "member", airtable_api_key)
 
 client = MottoBotto(mottos, members)
 client.run(discord_token)

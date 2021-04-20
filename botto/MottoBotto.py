@@ -35,10 +35,26 @@ class MottoBotto(discord.Client):
             log.debug("Reaction added")
             await message.reply(f'"{motto_message.content}" will be considered!')
             log.debug("Reply sent")
+
+            # Find the nominee and nominator
+            nominee = await self.get_or_add_member(motto_message.author)
+            nominator = await self.get_or_add_member(message.author)
+
             motto_data = {
                 "Motto": motto_message.content,
                 "Message ID": str(motto_message.id),
                 "Date": motto_message.created_at.isoformat(),
+                "Member": [nominee["id"]],
+                "Nominated By": [nominator["id"]],
             }
             self.mottos.insert(motto_data)
             log.debug("Added Motto to AirTable")
+
+    async def get_or_add_member(self, member):
+        member_record = self.members.match("Discord ID", member.id)
+        if not member_record:
+            member_data = {"Name": member.display_name, "Discord ID": str(member.id)}
+            member_record = self.members.insert(member_data)
+            log.debug(f"Added member {member_record} to AirTable")
+
+        return member_record
