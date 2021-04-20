@@ -1,58 +1,29 @@
-import configparser
-import logging
-from typing import Optional
+def parse(config):
 
-config = configparser.ConfigParser()
+    defaults = {
+        "authentication": {
+            "discord": "",
+            "airtable_key": "",
+            "airtable_base": "",
+        },
+        "rules": {
+            "min_words": 2,
+            "min_chars": 5,
+            "max_chars": 240
+        },
+        "channels": {
+            "include": [],
+            "exclude": [],
+        },
+        "reactions": {},
+        "triggers": {
+            "new_motto": ["!motto"],
+        },
+        "should_reply": True,
+    }
 
-log = logging.getLogger("MottoBotto")
+    for key in ("authentication", "channels", "reactions", "triggers", "rules"):
+        defaults[key].update(config.get(key, {}))
+    defaults["should_reply"] = config.get("should_reply", defaults["should_reply"])
 
-
-def read_config() -> bool:
-    """
-    Reads in the config file.
-    :return: True if successful, false otherwise
-    """
-    read_result = config.read("config.ini")
-    return "config.ini" in read_result
-
-
-def get_discord_token() -> str:
-    return config["authentication"]["discord"]
-
-
-def get_airtable_tokens() -> (str, str):
-    return (
-        config["authentication"]["airtable_base"],
-        config["authentication"]["airtable_key"],
-    )
-
-
-def get_channels() -> (Optional[tuple], Optional[tuple]):
-    try:
-        include = config.get("channels", "include")
-    except (configparser.NoSectionError, configparser.NoOptionError):
-        include = ""
-
-    try:
-        exclude = config.get("channels", "exclude")
-    except (configparser.NoSectionError, configparser.NoOptionError):
-        exclude = ""
-
-    return (
-        tuple(x.strip() for x in include.split(",")) if include else None,
-        tuple(x.strip() for x in exclude.split(",")) if exclude else None,
-    )
-
-
-def get_reactions() -> dict:
-    try:
-        return dict(config["reactions"].items())
-    except configparser.NoSectionError:
-        return {}
-
-
-def get_should_reply() -> bool:
-    try:
-        return config.getboolean("general", "should_reply")
-    except (configparser.NoSectionError, configparser.NoOptionError):
-        return True
+    return defaults

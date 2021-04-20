@@ -1,0 +1,26 @@
+{
+    "authentication": {
+        "discord": "",
+        "airtable_key": "",
+        "airtable_base": ""
+    },
+    "channels": {
+        "exclude": [
+            "ignore-this-channel"
+        ]
+    },
+    "reactions": {
+        "success": "📥",
+        "repeat": "♻️",
+        "unknown": "❓",
+        "skynet": "❌",
+        "fishing": "🎣"
+    },
+    "triggers": {
+        "new_motto": [
+            "!motto",
+            "Accurate. New motto?"
+        ]
+    },
+    "should_reply": false
+}
