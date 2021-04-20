@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Optional
 
 import discord
@@ -73,6 +74,9 @@ class MottoBotto(discord.Client):
         if message_length > self.config["rules"]["max_chars"]:
             return False
         if message_words < self.config["rules"]["min_words"]:
+            return False
+        if re.search(r"<@.*>", message.content):
+            # Messages with usernames in are not valid mottos
             return False
         return True
 
