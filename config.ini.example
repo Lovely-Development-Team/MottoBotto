@@ -1,2 +1,5 @@
 [authentication]
 discord=EnterDiscordBotToken
+
+[channels]
+include=bot-testing,general
