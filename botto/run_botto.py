@@ -10,18 +10,18 @@ log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
 
 if not read_config():
-    log.error('No config file present')
+    log.error("No config file present")
     exit(1)
 discord_token = None
 try:
     discord_token = get_discord_token()
     airtable_base_key, airtable_api_key = get_airtable_tokens()
 except KeyError as error:
-    log.error(f'Config missing required key: {error}')
+    log.error(f"Config missing required key: {error}")
     exit(1)
 
-mottos = Airtable(airtable_base_key, 'mottos', airtable_api_key)
-members = Airtable(airtable_base_key, 'members', airtable_api_key)
+mottos = Airtable(airtable_base_key, "mottos", airtable_api_key)
+members = Airtable(airtable_base_key, "members", airtable_api_key)
 
 client = MottoBotto(mottos, members)
 client.run(discord_token)
