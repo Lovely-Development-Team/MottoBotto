@@ -11,12 +11,19 @@ def read_config() -> bool:
     Reads in the config file.
     :return: True if successful, false otherwise
     """
-    read_result = config.read('config.ini')
-    return 'config.ini' in read_result
+    read_result = config.read("config.ini")
+    return "config.ini" in read_result
 
 
 def get_discord_token() -> str:
-    return config['authentication']['discord']
+    return config["authentication"]["discord"]
+
+
+def get_airtable_tokens() -> (str, str):
+    return (
+        config["authentication"]["airtable_base"],
+        config["authentication"]["airtable_key"],
+    )
 
 
 def get_channels() -> (str, str):
@@ -35,3 +42,5 @@ def get_channels() -> (str, str):
         tuple(x.strip() for x in include.split(",")) if include else None,
         tuple(x.strip() for x in exclude.split(",")) if exclude else None,
     )
+
+
