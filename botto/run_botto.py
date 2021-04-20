@@ -3,7 +3,7 @@ import logging
 from airtable import Airtable
 
 from MottoBotto import MottoBotto
-from config import read_config, get_discord_token, get_channels, get_airtable_tokens
+from config import read_config, get_discord_token, get_channels, get_airtable_tokens, get_reactions
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("MottoBotto")
@@ -23,6 +23,7 @@ except KeyError as error:
 mottos = Airtable(airtable_base_key, "motto", airtable_api_key)
 members = Airtable(airtable_base_key, "member", airtable_api_key)
 include_channels, exclude_channels = get_channels()
+reactions = get_reactions()
 
-client = MottoBotto(include_channels, exclude_channels, mottos, members)
+client = MottoBotto(include_channels, exclude_channels, reactions, mottos, members)
 client.run(discord_token)
