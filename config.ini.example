@@ -1,5 +1,7 @@
 [authentication]
 discord=EnterDiscordBotToken
+airtable_base=EnterAirtableBaseKey
+airtable_key=EnterAirtableAPIKey
 
 [channels]
 include=bot-testing,general

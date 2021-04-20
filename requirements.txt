@@ -1,0 +1,2 @@
+discord.py<1.8
+airtable-python-wrapper<0.16
