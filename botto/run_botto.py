@@ -20,7 +20,7 @@ except KeyError as error:
     log.error(f"Config missing required key: {error}")
     exit(1)
 
-mottos = Airtable(airtable_base_key, "mottos", airtable_api_key)
+mottos = Airtable(airtable_base_key, "motto", airtable_api_key)
 members = Airtable(airtable_base_key, "member", airtable_api_key)
 
 client = MottoBotto(mottos, members)
