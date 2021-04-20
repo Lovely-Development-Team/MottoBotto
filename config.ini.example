@@ -5,3 +5,9 @@ airtable_key=EnterAirtableAPIKey
 
 [channels]
 include=bot-testing,general
+
+[reactions]
+success=📥
+repeat=♻️
+unknown=❓
+skynet=❌
