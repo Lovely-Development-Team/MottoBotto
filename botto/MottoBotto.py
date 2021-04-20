@@ -9,18 +9,33 @@ log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
 
 
-class MottoBotto(discord.Client):
-    def __init__(self, mottos, members):
-        super(MottoBotto, self).__init__()
+TRIGGER_PHRASES = (
+    "!motto",
+    "Accurate. New motto?",
+)
 
+
+class MottoBotto(discord.Client):
+    def __init__(self, include_channels, exclude_channels, mottos, members):
+        self.include_channels = include_channels or ()
+        self.exclude_channels = exclude_channels or ()
         self.mottos = mottos
         self.members = members
+        super(MottoBotto, self).__init__()
 
     async def on_ready(self):
         log.info("We have logged in as {0.user}".format(self))
 
     async def on_message(self, message: Message):
-        if not message.content.startswith("!motto"):
+        channel_name = message.channel.name
+
+        if self.include_channels and channel_name not in self.include_channels:
+            return
+        else:
+            if channel_name in self.exclude_channels:
+                return
+
+        if message.content not in TRIGGER_PHRASES:
             return
 
         if is_botto(message, self.user):
@@ -30,6 +45,12 @@ class MottoBotto(discord.Client):
             await message.reply("I see no motto!")
         else:
             motto_message = message.reference.resolved
+
+            if motto_message.author == message.author:
+                log.info(f'Motto fishing from: "{motto_message.author}"')
+                await message.add_reaction("🎣")
+                return
+
             log.info(f'Motto suggestion incoming: "{motto_message.content}"')
 
             actual_motto = motto_message.content
