@@ -24,3 +24,23 @@ def get_airtable_tokens() -> (str, str):
         config["authentication"]["airtable_base"],
         config["authentication"]["airtable_key"],
     )
+
+
+def get_channels() -> (str, str):
+
+    try:
+        include = config.get('channels', 'include')
+    except (configparser.NoSectionError, configparser.NoOptionError):
+        include = ""
+
+    try:
+        exclude = config.get('channels', 'exclude')
+    except (configparser.NoSectionError, configparser.NoOptionError):
+        exclude = ""
+
+    return (
+        tuple(x.strip() for x in include.split(",")) if include else None,
+        tuple(x.strip() for x in exclude.split(",")) if exclude else None,
+    )
+
+
