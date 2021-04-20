@@ -1,6 +1,8 @@
 import logging
+from typing import Optional
 
 import discord
+from airtable import Airtable
 from discord import Message
 
 from message_checks import is_botto
@@ -16,12 +18,22 @@ TRIGGER_PHRASES = (
 
 
 class MottoBotto(discord.Client):
-    def __init__(self, include_channels, exclude_channels, reactions, mottos, members):
+    def __init__(
+        self,
+        include_channels: Optional[tuple],
+        exclude_channels: Optional[tuple],
+        reactions,
+        mottos: Airtable,
+        members: Airtable,
+        should_reply: bool = True,
+    ):
         self.include_channels = include_channels or ()
         self.exclude_channels = exclude_channels or ()
         self.reactions = reactions
         self.mottos = mottos
         self.members = members
+        self.should_reply = should_reply
+        log.info("Replies are enabled" if self.should_reply else "Replies are disabled")
         super(MottoBotto, self).__init__()
 
     async def on_ready(self):
@@ -46,10 +58,15 @@ class MottoBotto(discord.Client):
         if is_botto(message, self.user):
             log.info(f"{message.author} attempted to activate Skynet!")
             await self.add_reaction(message, "skynet", "❌")
-            await message.reply("Skynet prevention")
+            if self.should_reply:
+                await message.reply("Skynet prevention")
         elif not message.reference:
+            log.info(
+                f"Suggestion from {message.author} was not a reply (Message ID {message.id})"
+            )
             await self.add_reaction(message, "unknown", "❓")
-            await message.reply("I see no motto!")
+            if self.should_reply:
+                await message.reply("I see no motto!")
         else:
             motto_message = message.reference.resolved
 
