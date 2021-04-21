@@ -90,6 +90,9 @@ class MottoBotto(discord.Client):
         if re.search(r"<@.*>", message.content):
             # Messages with usernames in are not valid mottos
             return False
+        if re.search(r"^[\d\s]*$", message.content):
+            # Messages that are just numeric in are not valid mottos
+            return False
         return True
 
     async def get_or_add_member(self, member):
