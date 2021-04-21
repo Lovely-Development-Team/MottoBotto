@@ -39,7 +39,8 @@ class MottoBotto(discord.Client):
                 uppercased_trigger_group.append(trigger.upper())
             self.config["triggers"][trigger_group] = uppercased_trigger_group
 
-        super(MottoBotto, self).__init__()
+        intents = discord.Intents(messages=True, members=True, guilds=True)
+        super().__init__(intents=intents)
 
     async def on_ready(self):
         log.info("We have logged in as {0.user}".format(self))
@@ -52,7 +53,9 @@ class MottoBotto(discord.Client):
 
     async def on_message(self, message: Message):
         if is_dm(message):
-            log.info(f"Received direct message (ID: {message.id}) from {message.author}: {message.content}")
+            log.info(
+                f"Received direct message (ID: {message.id}) from {message.author}: {message.content}"
+            )
             log.info(f"Ignored message {message.id}")
             return
         channel_name = message.channel.name
@@ -77,6 +80,13 @@ class MottoBotto(discord.Client):
             await reactions.invalid(self, message)
         else:
             await self.process_suggestion(message)
+
+    async def on_member_update(self, before: Member, after: Member):
+        member_record = self.update_existing_member(after)
+        if member_record:
+            log.debug(
+                f"Recorded name change '{before.display_name}' to '{after.display_name}'"
+            )
 
     def is_valid_message(self, message: Message) -> bool:
 
@@ -111,6 +121,18 @@ class MottoBotto(discord.Client):
             log.debug("Updating display name")
             self.members.update(member_record["id"], {"Name": member.display_name})
 
+        return member_record
+
+    def update_existing_member(self, member: Member) -> Optional[dict]:
+        """
+        Updates an existing member's record. This will not add new members
+        :param member: the updated member from Discord
+        :return: the member record if they exist, otherwise None
+        """
+        member_record = self.members.match("Discord ID", member.id)
+        if not member_record:
+            return None
+        self.members.update(member_record["id"], {"Name": member.display_name})
         return member_record
 
     async def process_suggestion(self, message: Message):
