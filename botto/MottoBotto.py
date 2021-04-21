@@ -7,7 +7,7 @@ from airtable import Airtable
 from discord import Message
 
 import reactions
-from message_checks import is_botto
+from message_checks import is_botto, is_dm
 
 log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
@@ -49,6 +49,10 @@ class MottoBotto(discord.Client):
             await message.add_reaction(reaction)
 
     async def on_message(self, message: Message):
+        if is_dm(message):
+            log.info(f"Received direct message (ID: {message.id}) from {message.author}: {message.content}")
+            log.info(f"Ignored message {message.id}")
+            return
         channel_name = message.channel.name
 
         if (
