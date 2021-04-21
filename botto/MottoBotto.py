@@ -116,7 +116,7 @@ class MottoBotto(discord.Client):
         actual_motto = motto_message.content
         filter_motto = actual_motto.replace("'", r"\'")
 
-        filter_formula = f"REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', '') = REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', '')"
+        filter_formula = f"REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', ''), '\s+', ' ') = REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', ''), '\s+', ' ')"
         log.debug("Searching with filter %r", filter_formula)
         matching_mottos = self.mottos.get_all(filterByFormula=filter_formula)
         if matching_mottos:
