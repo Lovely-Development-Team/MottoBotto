@@ -6,11 +6,7 @@ def parse(config):
             "airtable_key": "",
             "airtable_base": "",
         },
-        "rules": {
-            "min_words": 2,
-            "min_chars": 5,
-            "max_chars": 240
-        },
+        "rules": {"min_words": 2, "min_chars": 5, "max_chars": 240},
         "channels": {
             "include": [],
             "exclude": [],
