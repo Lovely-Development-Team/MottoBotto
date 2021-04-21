@@ -13,12 +13,6 @@ log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
 
 
-TRIGGER_PHRASES = (
-    "!motto",
-    "Accurate. New motto?",
-)
-
-
 class MottoBotto(discord.Client):
     def __init__(
         self,
@@ -30,8 +24,21 @@ class MottoBotto(discord.Client):
         self.mottos = mottos
         self.members = members
 
-        log.info("Replies are enabled" if self.config["should_reply"] else "Replies are disabled")
+        log.info(
+            "Replies are enabled"
+            if self.config["should_reply"]
+            else "Replies are disabled"
+        )
         log.info("Responding to phrases: %s", self.config["triggers"])
+
+        # Uppercase the triggers as uppercase is more friendly to other languages
+        # This is in code to reduce the cognitive load on end users
+        for trigger_group in self.config["triggers"]:
+            uppercased_trigger_group = []
+            for trigger in self.config["triggers"][trigger_group]:
+                uppercased_trigger_group.append(trigger.upper())
+            self.config["triggers"][trigger_group] = uppercased_trigger_group
+
         super(MottoBotto, self).__init__()
 
     async def on_ready(self):
@@ -44,13 +51,16 @@ class MottoBotto(discord.Client):
     async def on_message(self, message: Message):
         channel_name = message.channel.name
 
-        if self.config["channels"]["include"] and channel_name not in self.config["channels"]["include"]:
+        if (
+            self.config["channels"]["include"]
+            and channel_name not in self.config["channels"]["include"]
+        ):
             return
         else:
             if channel_name in self.config["channels"]["exclude"]:
                 return
 
-        if message.content not in self.config["triggers"]["new_motto"]:
+        if message.content.upper() not in self.config["triggers"]["new_motto"]:
             return
 
         if is_botto(message, self.user):
@@ -67,7 +77,9 @@ class MottoBotto(discord.Client):
         message_length = len(message.content)
         message_words = len(message.content.split())
 
-        log.debug(f"Validating message against {self.config['rules']}. Length: {message_length}. Words: {message_words}")
+        log.debug(
+            f"Validating message against {self.config['rules']}. Length: {message_length}. Words: {message_words}"
+        )
 
         if message_length < self.config["rules"]["min_chars"]:
             return False
@@ -86,9 +98,9 @@ class MottoBotto(discord.Client):
             member_data = {"Name": member.display_name, "Discord ID": str(member.id)}
             member_record = self.members.insert(member_data)
             log.debug(f"Added member {member_record} to AirTable")
-        elif member_record['fields']['Name'] != member.display_name:
+        elif member_record["fields"]["Name"] != member.display_name:
             log.debug("Updating display name")
-            self.members.update(member_record['id'], {'Name': member.display_name })
+            self.members.update(member_record["id"], {"Name": member.display_name})
 
         return member_record
 

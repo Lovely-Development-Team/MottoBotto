@@ -16,8 +16,16 @@ except (IOError, OSError, ValueError):
     log.error("Config file invalid.")
     exit(1)
 
-mottos = Airtable(config["authentication"]["airtable_base"], "motto", config["authentication"]["airtable_key"])
-members = Airtable(config["authentication"]["airtable_base"], "member", config["authentication"]["airtable_key"])
+mottos = Airtable(
+    config["authentication"]["airtable_base"],
+    "motto",
+    config["authentication"]["airtable_key"],
+)
+members = Airtable(
+    config["authentication"]["airtable_base"],
+    "member",
+    config["authentication"]["airtable_key"],
+)
 
 client = MottoBotto(config, mottos, members)
 client.run(config["authentication"]["discord"])
