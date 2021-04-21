@@ -1,4 +1,4 @@
-from discord import Message, ClientUser
+from discord import Message, ClientUser, DMChannel
 
 
 def is_botto(message: Message, botto_user: ClientUser):
@@ -18,3 +18,12 @@ def is_botto(message: Message, botto_user: ClientUser):
         return True
     else:
         return False
+
+
+def is_dm(message: Message) -> bool:
+    """
+    Is the message a Direct message?
+    :param message: The message to check
+    :return: True if it's a DM, false otherwise.
+    """
+    return isinstance(message.channel, DMChannel)
