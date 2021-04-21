@@ -30,7 +30,11 @@ class MottoBotto(discord.Client):
         self.mottos = mottos
         self.members = members
 
-        log.info("Replies are enabled" if self.config["should_reply"] else "Replies are disabled")
+        log.info(
+            "Replies are enabled"
+            if self.config["should_reply"]
+            else "Replies are disabled"
+        )
         log.info("Responding to phrases: %s", self.config["triggers"])
         super(MottoBotto, self).__init__()
 
@@ -44,7 +48,10 @@ class MottoBotto(discord.Client):
     async def on_message(self, message: Message):
         channel_name = message.channel.name
 
-        if self.config["channels"]["include"] and channel_name not in self.config["channels"]["include"]:
+        if (
+            self.config["channels"]["include"]
+            and channel_name not in self.config["channels"]["include"]
+        ):
             return
         else:
             if channel_name in self.config["channels"]["exclude"]:
@@ -67,7 +74,9 @@ class MottoBotto(discord.Client):
         message_length = len(message.content)
         message_words = len(message.content.split())
 
-        log.debug(f"Validating message against {self.config['rules']}. Length: {message_length}. Words: {message_words}")
+        log.debug(
+            f"Validating message against {self.config['rules']}. Length: {message_length}. Words: {message_words}"
+        )
 
         if message_length < self.config["rules"]["min_chars"]:
             return False
@@ -78,6 +87,9 @@ class MottoBotto(discord.Client):
         if re.search(r"<@.*>", message.content):
             # Messages with usernames in are not valid mottos
             return False
+        if re.search(r"^[\d\s]*$", message.content):
+            # Messages that are just numeric in are not valid mottos
+            return False
         return True
 
     async def get_or_add_member(self, member):
@@ -86,9 +98,9 @@ class MottoBotto(discord.Client):
             member_data = {"Name": member.display_name, "Discord ID": str(member.id)}
             member_record = self.members.insert(member_data)
             log.debug(f"Added member {member_record} to AirTable")
-        elif member_record['fields']['Name'] != member.display_name:
+        elif member_record["fields"]["Name"] != member.display_name:
             log.debug("Updating display name")
-            self.members.update(member_record['id'], {'Name': member.display_name })
+            self.members.update(member_record["id"], {"Name": member.display_name})
 
         return member_record
 
