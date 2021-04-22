@@ -101,7 +101,7 @@ class MottoBotto(discord.Client):
         return member_record
 
     def update_existing_member(
-        self, member: Member, emoji: Optional[str] = None
+        self, member: Member
     ) -> Optional[dict]:
         """
         Updates an existing member's record. This will not add new members
@@ -114,8 +114,6 @@ class MottoBotto(discord.Client):
         update_dict = {
             "Name": member.display_name,
         }
-        if emoji is not None:
-            update_dict["Emoji"] = emoji
         self.members.update(member_record["id"], update_dict)
         return member_record
 
