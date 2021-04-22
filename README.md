@@ -89,8 +89,13 @@ The following is a full example `config.json`.
 ```
 
 ## MottoBotto Defaults
-MottoBotto has one recognizable command by default (all others must be added as laid out [above](#configuring-mottobotto)):
-* `!motto`
+### Trigger Phrases
+
+The trigger phrases detailed below are the defaults.  Any others for each trigger must be added as laid out [above](#configuring-mottobotto).
+
+#### Motto Nomination
+
+`!motto`
 
 MottoBotto will always react with emoji, but can also be configured to react with a text message response. The defaults for both are as follows:
 * 📥 MottoBotto added the nominated motto to the collection: "'Nominated-motto' will be considered!"
@@ -99,3 +104,14 @@ MottoBotto will always react with emoji, but can also be configured to react wit
 * ❌ MottoBotto is not allowing itself to be nominated (i.e. the nominated message was written by MottoBotto): "Skynet prevention"
 * 🎣 MottoBotto has rejected the motto for motto-fishing (i.e. the motto was written by the nominator): "Motto self-suggestions are forbidden"
 * 🙅 MottoBotto has rejected the motto for violating at least one rule (e.g. the motto is shorter than two words, the motto has a url in it, etc.) There is currently no text reply for this situation.
+
+#### Change Emoji
+
+`!emoji`
+
+This trigger phrase **must be sent as a direct message to MottoBotto**. If followed by an emoji (such as `!emoji 🚀`, it will set the user's emoji in the leaderboard to the specified emoji. If no emoji is specified, it will clear the emoji from the leaderboard for that user. It will only work for standard emoji, and not server-specific custom emoji.
+
+MottoBotto will respond to the message with one of two reactions (the emoji for which can be changed in configuration):
+
+* ✅ The user's emoji was successfully updated.
+* ⚠️ The emoji specified is not valid.
