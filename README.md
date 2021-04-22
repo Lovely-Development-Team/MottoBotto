@@ -1,9 +1,14 @@
 # MottoBotto
 MottoBotto is a configurable Discord bot with a penchant for mottos and words to live by. It sends nominated mottos to an AirTable base for further use.
 
+## Default Usage TLDR
+
+* Nominate somebody else's message as a potential motto with `!motto` in a reply to the message.
+* Change your leaderboard emoji with a direct message to MottoBotto of `!emoji <new-emoji>`.
+
 ## Interacting with MottoBotto
 
-To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. The default triggers can be found in the [section below](#mottobottos-defaults). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted, rejected, invalid, or previously nominated.
+To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted, rejected, invalid, or previously nominated.
 
 ### Rules MottoBotto follows when accepting mottos
 
@@ -26,7 +31,7 @@ MottoBotto will also reject any nomination that is a statement made by either yo
 
 ### Adding or changing your emoji on the leaderboard
 
-To add an emoji to your name on the leaderboard, change the emoji, or remove it, use the `!emoji` trigger in a direct message to MottoBotto.
+To add an emoji to your name on the leaderboard, change the emoji, or remove it, use the [change emoji trigger](#change-emoji) in a direct message to MottoBotto. The default is `!emoji`:
 
 * `!emoji 🚀` will set the ​🚀​ emoji for your user.
 * `!emoji` will clear any emoji for your user.
