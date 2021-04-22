@@ -24,6 +24,15 @@ MottoBotto will also reject any nomination that is a statement made by either yo
 3. Do not abuse MottoBotto. Channels should not become spammed with nominations at the expense of the actual conversation that is happening. MottoBotto should aid the discussion, not hinder it.
 4. Don’t fish for mottos. While there is a leaderboard, don’t try and cheat the system just to raise up the ranks. Instead, contribute to discussion naturally and helpfully and your reign will come.
 
+### Adding or changing your emoji on the leaderboard
+
+To add an emoji to your name on the leaderboard, change the emoji, or remove it, use the `!emoji` trigger in a direct message to MottoBotto.
+
+* `!emoji 🚀` will set the ​🚀​ emoji for your user.
+* `!emoji` will clear any emoji for your user.
+
+MottoBotto will respond with a reaction indicating a successful update or a problem with your request.
+
 ## Configuring MottoBotto
 
 MottoBotto requires a `config.json` configuration file, with the following sections.
