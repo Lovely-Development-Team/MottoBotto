@@ -8,7 +8,7 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 
 ## Interacting with MottoBotto
 
-To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted, rejected, invalid, or previously nominated.
+To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. **It is highly recommended to disable the @ ping for these replies!** The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted, rejected, invalid, or previously nominated.
 
 ### Rules MottoBotto follows when accepting mottos
 
