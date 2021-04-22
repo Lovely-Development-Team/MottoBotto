@@ -95,7 +95,7 @@ The following is a full example `config.json`.
     "triggers": {
         "new_motto": [
             "!motto$",
-	          "Accurate[.,!] New motto\\?"
+	    "Accurate[.,!] New motto\\?"
         ]
     },
     "should_reply": false
