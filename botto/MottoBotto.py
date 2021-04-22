@@ -31,6 +31,7 @@ class MottoBotto(discord.Client):
             else "Replies are disabled"
         )
         log.info("Responding to phrases: %s", self.config["triggers"])
+        log.info("Rules: %s", self.config["rules"])
 
         intents = discord.Intents(messages=True, members=True, guilds=True)
         super().__init__(intents=intents)
@@ -71,25 +72,9 @@ class MottoBotto(discord.Client):
             )
 
     def is_valid_message(self, message: Message) -> bool:
-
-        message_length = len(message.content)
-        message_words = len(message.content.split())
-
-        log.debug(
-            f"Validating message against {self.config['rules']}. Length: {message_length}. Words: {message_words}"
-        )
-
-        if message_length < self.config["rules"]["min_chars"]:
-            return False
-        if message_length > self.config["rules"]["max_chars"]:
-            return False
-        if message_words < self.config["rules"]["min_words"]:
-            return False
-        if re.search(r"<@.*>", message.content):
-            # Messages with usernames in are not valid mottos
-            return False
-        if re.search(r"^[\d\s]*$", message.content):
-            # Messages that are just numeric in are not valid mottos
+        if not all(
+            r.search(message.content) for r in self.config["rules"]["matching"]
+        ) or any(r.search(message.content) for r in self.config["rules"]["excluding"]):
             return False
         return True
 
@@ -100,19 +85,24 @@ class MottoBotto(discord.Client):
         if emoji is not None:
             data["Emoji"] = emoji
 
+        log.debug(f"Update data: {data}")
+        log.debug(f"Member record: {member_record}")
+
         if not member_record:
             data["Name"] = member.display_name
             data["Discord ID"] = str(member.id)
             member_record = self.members.insert(data)
             log.debug(f"Added member {member_record} to AirTable")
 
-        elif member_record["fields"].get("Emoji") != data.get("emoji"):
+        elif member_record["fields"].get("Emoji") != data.get("Emoji"):
             log.debug("Updating member emoji details")
             self.members.update(member_record["id"], data)
 
         return member_record
 
-    def update_existing_member(self, member: Member, emoji: Optional[str] = None) -> Optional[dict]:
+    def update_existing_member(
+        self, member: Member, emoji: Optional[str] = None
+    ) -> Optional[dict]:
         """
         Updates an existing member's record. This will not add new members
         :param member: the updated member from Discord
@@ -131,7 +121,9 @@ class MottoBotto(discord.Client):
 
     async def process_suggestion(self, message: Message):
 
-        if message.content.upper() not in self.config["triggers"]["new_motto"]:
+        if not any(
+            t.match(message.content) for t in self.config["triggers"]["new_motto"]
+        ):
             return
 
         if is_botto(message, self.user):
@@ -186,13 +178,14 @@ class MottoBotto(discord.Client):
             f"Received direct message (ID: {message.id}) from {message.author}: {message.content}"
         )
 
-        upper_content = message.content.upper()
+        if emoji_trigger := [
+            t
+            for t in self.config["triggers"]["change_emoji"]
+            if t.match(message.content)
+        ]:
 
-        if emoji_trigger := [t for t in self.config["triggers"]["change_emoji"] if upper_content.startswith(t)]:
-
-            emoji_trigger = emoji_trigger[0]
-            content = message.content[len(emoji_trigger):].strip().strip('\ufe0f')
-            log.debug(f"User {message.author} wants to change emoji: {content!r} (trigger: {emoji_trigger})")
+            content = emoji_trigger[0].sub("", message.content).strip().strip("\ufe0f")
+            log.debug(f"User {message.author} wants to change emoji: {content!r}")
 
             if not content:
                 log.debug(f"Removing emoji")

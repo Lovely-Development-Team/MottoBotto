@@ -12,9 +12,11 @@ log.setLevel(logging.DEBUG)
 
 try:
     config = parse(json.load(open("config.json")))
-except (IOError, OSError, ValueError):
-    log.error("Config file invalid.")
+except (IOError, OSError, ValueError) as err:
+    log.error(f"Config file invalid: {err}")
     exit(1)
+
+log.info(f"Triggers: {config['triggers']}")
 
 mottos = Airtable(
     config["authentication"]["airtable_base"],
