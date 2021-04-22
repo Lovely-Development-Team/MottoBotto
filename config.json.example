@@ -18,8 +18,8 @@
     },
     "triggers": {
         "new_motto": [
-            "!motto",
-            "Accurate. New motto?"
+            "!motto$",
+            "Accurate[.,!] New motto\\?"
         ]
     },
     "should_reply": false
