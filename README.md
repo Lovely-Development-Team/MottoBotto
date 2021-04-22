@@ -106,7 +106,7 @@ The trigger phrases detailed below are the defaults.  Any others for each trigge
 
 `!motto`
 
-MottoBotto will always react with emoji, but can also be configured to react with a text message response. The defaults for both are as follows:
+MottoBotto will always react with emoji, but can also be configured to react with a text message response. The defaults for both are as follows, although the emoji reactions can be changed in configuration:
 * 📥 MottoBotto added the nominated motto to the collection: "'Nominated-motto' will be considered!"
 * ❓ MottoBotto does not know what you're responding to (i.e. the nominator has forgotten to reply to the motto they are nominating): "I see no motto!"
 * ♻️ MottoBotto has previously added the nominated motto to the collection. There is currently no text reply for this situation.
@@ -120,7 +120,7 @@ MottoBotto will always react with emoji, but can also be configured to react wit
 
 This trigger phrase **must be sent as a direct message to MottoBotto**. If followed by an emoji (such as `!emoji 🚀`, it will set the user's emoji in the leaderboard to the specified emoji. If no emoji is specified, it will clear the emoji from the leaderboard for that user. It will only work for standard emoji, and not server-specific custom emoji.
 
-MottoBotto will respond to the message with one of two reactions (the emoji for which can be changed in configuration):
+MottoBotto will respond to the message with one of two reactions (the emoji for which can be changed in configuration). The defaults are as follows:
 
 * ✅ The user's emoji was successfully updated.
 * ⚠️ The emoji specified is not valid.
