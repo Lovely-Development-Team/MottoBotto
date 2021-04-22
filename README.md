@@ -132,8 +132,9 @@ MottoBotto will respond to the message with one of two reactions (the emoji for 
 
 ## Licensing
 
-This code is copyright the contributors. 
-(MottoBotto is licensed under Mozilla Public License 2.0)[MottoBotto/LICENSE]
+This code is copyright the contributors.
+
+[MottoBotto is licensed under Mozilla Public License 2.0](LICENSE)
 
 ### MottoBotto's Profile Image
-Robot and Scroll Emoji Copyright 2020 Twitter, Inc and other contributors and licensed under (CC-BY 4.0)[https://creativecommons.org/licenses/by/4.0/]
+Robot and Scroll Emoji Copyright 2020 Twitter, Inc and other contributors and licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/)
