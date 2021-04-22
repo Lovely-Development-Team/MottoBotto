@@ -45,3 +45,18 @@ async def stored(botto: MottoBotto, message: Message, motto_message: Message):
     if botto.config["should_reply"]:
         await message.reply(f'"{motto_message.content}" will be considered!')
     log.debug("Reply sent")
+
+
+async def invalid_emoji(botto: MottoBotto, message: Message):
+    log.info(f"Invalid emoji requested from {message.author}")
+    await botto.add_reaction(message, "invalid_emoji", "⚠️")
+
+
+async def valid_emoji(botto: MottoBotto, message: Message):
+    log.info(f"Valid emoji requested from {message.author}")
+    await botto.add_reaction(message, "valid_emoji", "✅")
+
+
+async def unknown_dm(botto: MottoBotto, message: Message):
+    log.info(f"I don't know how to handle {message.content} from {message.author}")
+    await botto.add_reaction(message, "unknown", "❓")
