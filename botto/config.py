@@ -1,3 +1,6 @@
+import re
+
+
 def parse(config):
 
     defaults = {
@@ -6,15 +9,24 @@ def parse(config):
             "airtable_key": "",
             "airtable_base": "",
         },
-        "rules": {"min_words": 2, "min_chars": 5, "max_chars": 240},
+        "rules": {
+            "matching": [
+                r"^.{5,240}$",  # Between 5 and 240 characters
+                r"^(\S+\s+)\S+",  # At least two "words"
+            ],
+            "excluding": [
+                r"<@.*>",  # Contains an @username reference
+                r"^[\d\W\s]*$",  # Purely numeric or whitespace
+            ],
+        },
         "channels": {
             "include": [],
             "exclude": [],
         },
         "reactions": {},
         "triggers": {
-            "new_motto": ["!motto"],
-            "change_emoji": ["!emoji"],
+            "new_motto": [r"!motto$"],
+            "change_emoji": [r"!emoji"],
         },
         "should_reply": True,
     }
@@ -24,6 +36,11 @@ def parse(config):
     defaults["should_reply"] = config.get("should_reply", defaults["should_reply"])
 
     for key, triggers in defaults["triggers"].items():
-        defaults["triggers"][key] = [t.upper() for t in triggers]
+        defaults["triggers"][key] = [
+            re.compile(f"^{t}", re.IGNORECASE) for t in triggers
+        ]
+
+    for key, rules in defaults["rules"].items():
+        defaults["rules"][key] = [re.compile(r) for r in rules]
 
     return defaults
