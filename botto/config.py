@@ -16,7 +16,7 @@ def parse(config):
             ],
             "excluding": [
                 r"<@.*>",  # Contains an @username reference
-                r"^[\d\s]*$",  # Purely numeric or whitespace
+                r"^[\d\W\s]*$",  # Purely numeric or whitespace
             ],
         },
         "channels": {
