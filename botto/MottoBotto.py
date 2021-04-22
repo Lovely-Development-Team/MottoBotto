@@ -72,7 +72,9 @@ class MottoBotto(discord.Client):
             )
 
     def is_valid_message(self, message: Message) -> bool:
-        if not all(r.search(message.content) for r in self.config["rules"]["matching"]) or any(r.search(message.content) for r in self.config["rules"]["excluding"]):
+        if not all(
+            r.search(message.content) for r in self.config["rules"]["matching"]
+        ) or any(r.search(message.content) for r in self.config["rules"]["excluding"]):
             return False
         return True
 
@@ -98,7 +100,9 @@ class MottoBotto(discord.Client):
 
         return member_record
 
-    def update_existing_member(self, member: Member, emoji: Optional[str] = None) -> Optional[dict]:
+    def update_existing_member(
+        self, member: Member, emoji: Optional[str] = None
+    ) -> Optional[dict]:
         """
         Updates an existing member's record. This will not add new members
         :param member: the updated member from Discord
@@ -117,7 +121,9 @@ class MottoBotto(discord.Client):
 
     async def process_suggestion(self, message: Message):
 
-        if not any(t.match(message.content) for t in self.config["triggers"]["new_motto"]):
+        if not any(
+            t.match(message.content) for t in self.config["triggers"]["new_motto"]
+        ):
             return
 
         if is_botto(message, self.user):
@@ -172,9 +178,13 @@ class MottoBotto(discord.Client):
             f"Received direct message (ID: {message.id}) from {message.author}: {message.content}"
         )
 
-        if emoji_trigger := [t for t in self.config["triggers"]["change_emoji"] if t.match(message.content)]:
+        if emoji_trigger := [
+            t
+            for t in self.config["triggers"]["change_emoji"]
+            if t.match(message.content)
+        ]:
 
-            content = emoji_trigger[0].sub("", message.content).strip().strip('\ufe0f')
+            content = emoji_trigger[0].sub("", message.content).strip().strip("\ufe0f")
             log.debug(f"User {message.author} wants to change emoji: {content!r}")
 
             if not content:
