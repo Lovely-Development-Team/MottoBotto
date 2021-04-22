@@ -44,9 +44,9 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 
 | Section          | Key             | Default Value                    | Required | Description                                                  |
 | ---------------- | --------------- | -------------------------------- | -------- | ------------------------------------------------------------ |
-| `authentication` | `discord`       | None                             | Yes      | MottoBotto's DIscord bot token.                              |
-|                  | `airtable_key`  | None                             | Yes      | The API key for access to Airtable's API.                    |
-|                  | `airtable_base` | None                             | Yes      | The ID of the Airtable base to store the mottos.             |
+| `authentication` | `discord`       | Empty string                     | Yes      | MottoBotto's DIscord bot token.                              |
+|                  | `airtable_key`  | Empty string                     | Yes      | The API key for access to Airtable's API.                    |
+|                  | `airtable_base` | Empty string                     | Yes      | The ID of the Airtable base to store the mottos.             |
 | `channels`       | `exclude`       | Empty list                       | No       | A list of Discord channel names to ignore when reacting to triggers. |
 |                  | `include`       | Empty list                       | No       | A list of Discord channels to specifically respond to triggers within. If specified, all other channels are ignored. |
 | `reactions`      | `success`       | See below.                       | No       | The emoji to react to a successful nomination with.          |
