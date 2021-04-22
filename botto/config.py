@@ -12,7 +12,7 @@ def parse(config):
         "rules": {
             "matching": [
                 r"^.{5,240}$",  # Between 5 and 240 characters
-                r"^(\S+\s)\S+",  # At least two "words"
+                r"^(\S+\s+)\S+",  # At least two "words"
             ],
             "excluding": [
                 r"<@.*>",  # Contains an @username reference
