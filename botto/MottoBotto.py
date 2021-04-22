@@ -95,18 +95,19 @@ class MottoBotto(discord.Client):
 
     async def get_or_add_member(self, member: Member, emoji: Optional[str] = None):
         member_record = self.members.match("Discord ID", member.id)
-        data = {
-            "Name": member.display_name,
-        }
+
+        data = {}
         if emoji is not None:
             data["Emoji"] = emoji
 
         if not member_record:
+            data["Name"] = member.display_name
             data["Discord ID"] = str(member.id)
             member_record = self.members.insert(data)
             log.debug(f"Added member {member_record} to AirTable")
-        elif emoji is not None and member_record["fields"].get("Emoji", "") != emoji:
-            log.debug("Updating member details")
+
+        elif member_record["fields"].get("Emoji") != data.get("emoji"):
+            log.debug("Updating member emoji details")
             self.members.update(member_record["id"], data)
 
         return member_record
