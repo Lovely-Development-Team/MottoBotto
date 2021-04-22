@@ -16,7 +16,7 @@ Mottos that are considered valid by MottoBotto are:
 
 Any suggested motto that doesn't conform to these rules will be responded to with a🙅emoji reaction.
 
-MottoBotto will also reject any nomination that is a statement you made yourself.
+MottoBotto will also reject any nomination that is a statement made by either yourself or MottoBotto.
 
 ### Rules humans should follow when suggesting mottos
 
