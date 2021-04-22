@@ -37,3 +37,11 @@ Depending on whether MottoBotto is configured to react with words, or with emoji
 * MottoBotto is not allowing itself to be nominated (i.e. the nominated message was written by MottoBotto): ❌ or "Skynet prevention"
 * MottoBotto has rejected the motto for motto-fishing (i.e. the motto was written by the nominator): 🎣 or "Motto self-suggestions are forbidden"
 * MottoBotto has rejected the motto for violating at least one rule (e.g. the motto is shorter than two words, the motto has a url in it, etc.): 🙅 or ""
+
+## Licensing
+
+This code is copyright the contributors. 
+
+MottoBotto's profile picture was created using the Robot and Scroll Emoji. Robot and Scroll Emoji Copyright 2020 Twitter, Inc and other contributors and licensed under (CC-BY 4.0)[https://creativecommons.org/licenses/by/4.0/]
+
+(MottoBotto is licensed under Mozilla Public License 2.0)[LICENSE]
