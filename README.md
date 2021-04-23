@@ -18,7 +18,7 @@ Mottos that are considered valid by MottoBotto are:
 
 * at least 2 words in length,
 * between 5 and 240 characters in length,
-* are not purely punctuation, emoji, or numeric, and
+* are not purely punctuation, emoji, numeric, or url, and
 * do not tag any Discord users.
 
 Any suggested motto that doesn't conform to these rules will be rejected. 
@@ -60,7 +60,7 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 |                  | `invalid_emoji` | See below.                       | No       | The emoji to react to invalid emoji updates with.            |
 |                  | `valid_emoji`   | See below.                       | No       | The emoji to react to successful emoji updates with.         |
 | `should_reply`   | N/A             | `true`                           | No       | Whether to send message replies in response to nominations or not. If `false`, the only notifications users will receive are emoji reactions on their nomination message. |
-| `rules`          | `matching`      | `^.{5,240}$`<br />`^(\S+\s+)\S+` | No       | A list of regular expressions to match against the nominated motto text that must all match for the motto to accepted. The message is first stripped of leading and trailing whitespace before matching. * |
+| `rules`          | `matching`      | `^.{5,240}$`<br />`^(\S+\s+)\S+` | No       | A list of regular expressions to match against the nominated motto text that must all match for the motto to be accepted. The message is first stripped of leading and trailing whitespace before matching. * |
 |                  | `excluding`     | `<@.*>`<br />`^[\d\W\s]*$`       | No       | A list of regular expressions to match against the nominated motto text, where any successful match will result in an invalid motto response. The message is first stripped of leading and trailing whitespace before matching. * |
 | `triggers`       | `new_motto`     | `!motto$`                        | No       | A list of regular expressions to match against every incoming message in the relevant channels (see `channels` above) to recognise a new nomination. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
 |                  | `change_emoji`  | `!emoji`                         | No       | A list of regular expressions to match against every incoming direct message to recognise a request to change the user's emoji. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
@@ -120,7 +120,7 @@ MottoBotto will always react with emoji, but can also be configured to react wit
 * ♻️ MottoBotto has previously added the nominated motto to the collection. There is currently no text reply for this situation.
 * ❌ MottoBotto is not allowing itself to be nominated (i.e. the nominated message was written by MottoBotto): "Skynet prevention"
 * 🎣 MottoBotto has rejected the motto for motto-fishing (i.e. the motto was written by the nominator): "Motto self-suggestions are forbidden"
-* 🙅 MottoBotto has rejected the motto for violating at least one rule (e.g. the motto is shorter than two words, the motto has a url in it, etc.) There is currently no text reply for this situation.
+* 🙅 MottoBotto has rejected the motto for violating at least one rule (e.g. the motto is shorter than two words, the motto @-mentions another user, etc.) There is currently no text reply for this situation.
 
 #### Change Emoji
 
