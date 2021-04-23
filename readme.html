@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <title>MottoBotto</title>
+
+  <style>
+
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      padding: 20px;
+    }
+
+  </style>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+</head>
+
+<body>
+
+  <div id="content"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+  <script>
+
+    fetch("README.md").then(function(response) {
+      response.text().then(function(text) {
+
+        var converter = new showdown.Converter({"tables": true}),
+            html      = converter.makeHtml(text);
+
+        document.getElementById("content").innerHTML = html;
+        for (let e of document.getElementsByTagName("table")) {
+          e.classList.add("table");
+        }
+
+      });
+    });
+
+  </script>
+
+</body>
+
+</html>
