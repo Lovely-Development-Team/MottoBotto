@@ -5,10 +5,11 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 
 * Nominate somebody else's message as a potential motto with `!motto` in a reply to the message.
 * Change your leaderboard emoji with a direct message to MottoBotto of `!emoji <new-emoji>`.
+* View the [list of mottos and the leaderboard](https://dwrss.github.io/MottoBotto/).
 
 ## Interacting with MottoBotto
 
-To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. **It is highly recommended to disable the @ ping for these replies!** The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted, rejected, invalid, or previously nominated.
+To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. **It is highly recommended to disable the @ ping for these replies!** The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted, rejected, invalid, or previously nominated. Mottos must be manually approved by moderators, and will then be available for display, along with a leaderboard for motto-makers, in [a simple web view](https://dwrss.github.io/MottoBotto/).
 
 ### Rules MottoBotto follows when accepting mottos
 
