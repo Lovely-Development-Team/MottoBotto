@@ -26,6 +26,7 @@ Any suggested motto that doesn't conform to these rules will be rejected.
 MottoBotto will also reject any nomination that is a statement made by either yourself or MottoBotto.
 
 ### Rules humans should follow when suggesting mottos
+
 1. The rules of the server should always be followed, and trump any other rules written here.
 2. Aim to nominate mottos that have a useful sentiment rather than solely japes. The aim is to have a useful database of mottos from a variety of users that people can look over and get use from.
 3. Do not abuse MottoBotto. Channels should not become spammed with nominations at the expense of the actual conversation that is happening. MottoBotto should aid the discussion, not hinder it.
@@ -58,7 +59,7 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 |                  | `invalid`       | See below.                       | No       | The emoji to react to invalid nominations with.              |
 |                  | `invalid_emoji` | See below.                       | No       | The emoji to react to invalid emoji updates with.            |
 |                  | `valid_emoji`   | See below.                       | No       | The emoji to react to successful emoji updates with.         |
-| `should_reply`   | N/A             | `true`                           | No       | Whether to send message replies in response to nomations or not. If `false`, the only notifications users will receive are emoji reactions on their nomination message. |
+| `should_reply`   | N/A             | `true`                           | No       | Whether to send message replies in response to nominations or not. If `false`, the only notifications users will receive are emoji reactions on their nomination message. |
 | `rules`          | `matching`      | `^.{5,240}$`<br />`^(\S+\s+)\S+` | No       | A list of regular expressions to match against the nominated motto text that must all match for the motto to accepted. The message is first stripped of leading and trailing whitespace before matching. * |
 |                  | `excluding`     | `<@.*>`<br />`^[\d\W\s]*$`       | No       | A list of regular expressions to match against the nominated motto text, where any successful match will result in an invalid motto response. The message is first stripped of leading and trailing whitespace before matching. * |
 | `triggers`       | `new_motto`     | `!motto$`                        | No       | A list of regular expressions to match against every incoming message in the relevant channels (see `channels` above) to recognise a new nomination. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
