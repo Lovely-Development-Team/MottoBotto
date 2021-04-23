@@ -32,4 +32,4 @@ jobs:
           KEY: ${{ secrets.DEPLOY_SSHKEY }}
         with:
           source: "."
-          target: "/opt/MottoBotto/botto_src"
+          target: "/opt/MottoBotto/botto_src/"
