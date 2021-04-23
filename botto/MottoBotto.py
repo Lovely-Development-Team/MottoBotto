@@ -14,6 +14,9 @@ log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
 
 
+CHANNEL_REGEX = re.compile("<#(\d+)>")
+
+
 class MottoBotto(discord.Client):
     def __init__(
         self,
@@ -100,9 +103,7 @@ class MottoBotto(discord.Client):
 
         return member_record
 
-    def update_existing_member(
-        self, member: Member
-    ) -> Optional[dict]:
+    def update_existing_member(self, member: Member) -> Optional[dict]:
         """
         Updates an existing member's record. This will not add new members
         :param member: the updated member from Discord
@@ -147,6 +148,13 @@ class MottoBotto(discord.Client):
         log.info(f'Motto suggestion incoming: "{motto_message.content}"')
 
         actual_motto = motto_message.content
+
+        for channel_id in CHANNEL_REGEX.findall(actual_motto):
+            channel = self.get_channel(int(channel_id))
+            if not channel:
+                continue
+            actual_motto = actual_motto.replace(f"<#{channel_id}>", f"#{channel.name}")
+
         filter_motto = actual_motto.replace("'", r"\'")
 
         filter_formula = f"REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', ''), '\s+', ' ') = REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', ''), '\s+', ' ')"
