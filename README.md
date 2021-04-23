@@ -1,5 +1,5 @@
 # MottoBotto
-MottoBotto is a configurable Discord bot with a penchant for mottos and words to live by. It sends nominated mottos to an AirTable base for further use.
+MottoBotto is a configurable Discord bot with a penchant for mottos and words to live by. It sends nominated mottos to an Airtable base for further use.
 
 ## Default Usage TLDR
 
