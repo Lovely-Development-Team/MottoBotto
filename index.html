@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <title>MottoBotto</title>
+
+  <style>
+
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      height: 30px;
+    }
+
+    .column {
+      width: 50%;
+      height: 100%;
+      padding: 20px;
+      float: left;
+    }
+
+    .column:first-child {
+      padding-right: 10px;
+    }
+
+    .column:last-child {
+      padding-left: 10px;
+    }
+
+    iframe {
+      height: calc(100vh - 30px - 20px - 20px - 20px - 10px);
+    }
+
+    @media only screen and (max-width: 600px) {
+      .column {
+        width: 100%;
+        float: none;
+      }
+      .column:first-child {
+        padding-right: 20px;
+      }
+      .column:last-child {
+        padding-left: 20px;
+      }
+      iframe {
+        height: 600px;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="column">
+    <h2>Leaderboard</h2>
+    <iframe class="airtable-embed" src="https://airtable.com/embed/shr1cljqCGWTOS4MA?backgroundColor=teal&layout=card&viewControls=on" frameborder="0" onmousewheel="" width="100%"></iframe>
+  </div>
+
+  <div class="column">
+    <h2>Mottos</h2>
+    <iframe class="airtable-embed" src="https://airtable.com/embed/shr3AspddKLGE75VD?backgroundColor=teal&layout=card&viewControls=on" frameborder="0" onmousewheel="" width="100%"></iframe>
+  </div>
+
+</body>
+
+</html>
