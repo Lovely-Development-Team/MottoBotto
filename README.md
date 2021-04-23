@@ -4,8 +4,9 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 ## Default Usage TLDR
 
 * Nominate somebody else's message as a potential motto with `!motto` in a reply to the message.
+* View the [list of approved mottos and the leaderboard](https://dwrss.github.io/MottoBotto/).
 * Change your leaderboard emoji with a direct message to MottoBotto of `!emoji <new-emoji>`.
-* View the [list of mottos and the leaderboard](https://dwrss.github.io/MottoBotto/).
+
 
 ## Interacting with MottoBotto
 
