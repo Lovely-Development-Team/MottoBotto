@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import logging.config
@@ -12,7 +13,7 @@ logging.config.fileConfig(fname='log.conf', disable_existing_loggers=False)
 log = logging.getLogger("MottoBotto")
 
 try:
-    config = parse(json.load(open("config.json")))
+    config = parse(json.load(open(os.getenv("MOTTOBOTTO_CONFIG", "config.json"))))
 except (IOError, OSError, ValueError) as err:
     log.error(f"Config file invalid: {err}")
     exit(1)
