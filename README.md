@@ -16,8 +16,8 @@ To nominate a motto for consideration, reply to the Discord message with one of 
 
 Mottos that are considered valid by MottoBotto are:
 
-* at least two words in length,
-* between five and 240 characters in length,
+* at least 2 words in length,
+* between 5 and 240 characters in length,
 * are not purely punctuation, emoji, or numeric, and
 * do not tag any Discord users.
 
