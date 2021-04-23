@@ -1,14 +1,15 @@
 import json
 import logging
+import logging.config
 
 from airtable import Airtable
 
 from MottoBotto import MottoBotto
 from config import parse
 
-logging.basicConfig(level=logging.INFO)
+# Configure logging
+logging.config.fileConfig(fname='log.conf', disable_existing_loggers=False)
 log = logging.getLogger("MottoBotto")
-log.setLevel(logging.DEBUG)
 
 try:
     config = parse(json.load(open("config.json")))
