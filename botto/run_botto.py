@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 
@@ -11,7 +12,7 @@ log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
 
 try:
-    config = parse(json.load(open("config.json")))
+    config = parse(json.load(open(os.getenv("MOTTOBOTTO_CONFIG", "config.json"))))
 except (IOError, OSError, ValueError) as err:
     log.error(f"Config file invalid: {err}")
     exit(1)
