@@ -41,6 +41,6 @@ def parse(config):
         ]
 
     for key, rules in defaults["rules"].items():
-        defaults["rules"][key] = [re.compile(r) for r in rules]
+        defaults["rules"][key] = [re.compile(r, re.MULTILINE) for r in rules]
 
     return defaults
