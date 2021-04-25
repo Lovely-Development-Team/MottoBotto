@@ -1,4 +1,5 @@
 import re
+import os
 
 
 def parse(config):
@@ -33,6 +34,7 @@ def parse(config):
 
     for key in ("authentication", "channels", "reactions", "triggers", "rules"):
         defaults[key].update(config.get(key, {}))
+
     defaults["should_reply"] = config.get("should_reply", defaults["should_reply"])
 
     for key, triggers in defaults["triggers"].items():
@@ -42,5 +44,16 @@ def parse(config):
 
     for key, rules in defaults["rules"].items():
         defaults["rules"][key] = [re.compile(r, re.MULTILINE) for r in rules]
+
+    # Environment variables override config files
+
+    if token := os.getenv("MOTTOBOTTO_DISCORD_TOKEN"):
+        defaults["authentication"]["discord"] = token
+
+    if token := os.getenv("MOTTOBOTTO_AIRTABLE_KEY"):
+        defaults["authentication"]["airtable_key"] = token
+
+    if token := os.getenv("MOTTOBOTTO_AIRTABLE_BASE"):
+        defaults["authentication"]["airtable_base"] = token
 
     return defaults
