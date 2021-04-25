@@ -67,12 +67,6 @@ class MottoBotto(discord.Client):
 
         await self.process_suggestion(message)
 
-    async def on_member_update(self, before: Member, after: Member):
-        member_record = self.update_existing_member(after)
-        if member_record:
-            log.debug(
-                f"Recorded name change '{before.display_name}' to '{after.display_name}'"
-            )
 
     def is_valid_message(self, message: Message) -> bool:
         if not all(
@@ -92,7 +86,7 @@ class MottoBotto(discord.Client):
         log.debug(f"Member record: {member_record}")
 
         if not member_record:
-            data["Name"] = member.display_name
+            data["Name"] = member.nick
             data["Discord ID"] = str(member.id)
             member_record = self.members.insert(data)
             log.debug(f"Added member {member_record} to AirTable")
@@ -100,6 +94,18 @@ class MottoBotto(discord.Client):
         elif member_record["fields"].get("Emoji") != data.get("Emoji"):
             log.debug("Updating member emoji details")
             self.members.update(member_record["id"], data)
+            
+        airtable_name = member_record["fields"].get("Name")
+        discord_name = member.nick
+        if airtable_name != discord_name: 
+            update_dict = {
+                "Name": discord_name,
+            }
+            self.members.update(member_record["id"], update_dict)
+            log.debug(
+                f"Recorded name change '{airtable_name}' to '{discord_name}'"
+            )
+            
 
         return member_record
 
