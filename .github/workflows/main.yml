@@ -6,7 +6,7 @@ name: Deploy
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main,setup-cd ]
+    branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -30,6 +30,18 @@ jobs:
           USERNAME: ${{ secrets.DEPLOY_USERNAME }}
           PASSPHRASE: ${{ secrets.DEPLOY_SSHKEY_PASSPHRASE }}
           KEY: ${{ secrets.DEPLOY_SSHKEY }}
+        with:
+          source: "."
+          target: "/opt/MottoBotto/botto_src/"
+    
+      - name: Start MottoBotto
+        uses: appleboy/ssh-action@v0.1.4
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}:/opt/MottoBotto
+          USERNAME: ${{ secrets.DEPLOY_USERNAME }}
+          PASSPHRASE: ${{ secrets.DEPLOY_SSHKEY_PASSPHRASE }}
+          KEY: ${{ secrets.DEPLOY_SSHKEY }}
+          SCRIPT: "supervisorctl restart mottobotto"
         with:
           source: "."
           target: "/opt/MottoBotto/botto_src/"
