@@ -37,11 +37,8 @@ jobs:
       - name: Start MottoBotto
         uses: appleboy/ssh-action@v0.1.4
         env:
-          HOST: ${{ secrets.DEPLOY_HOST }}:/opt/MottoBotto
+          HOST: ${{ secrets.DEPLOY_HOST }}
           USERNAME: ${{ secrets.DEPLOY_USERNAME }}
           PASSPHRASE: ${{ secrets.DEPLOY_SSHKEY_PASSPHRASE }}
           KEY: ${{ secrets.DEPLOY_SSHKEY }}
-          SCRIPT: "supervisorctl restart mottobotto"
-        with:
-          source: "."
-          target: "/opt/MottoBotto/botto_src/"
+          SCRIPT: "cd /opt/MottoBotto && supervisorctl restart mottobotto"
