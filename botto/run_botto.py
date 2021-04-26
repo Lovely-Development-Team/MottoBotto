@@ -9,7 +9,7 @@ from MottoBotto import MottoBotto
 from config import parse
 
 # Configure logging
-logging.config.fileConfig(fname='log.conf', disable_existing_loggers=False)
+logging.config.fileConfig(fname="log.conf", disable_existing_loggers=False)
 log = logging.getLogger("MottoBotto")
 
 try:
