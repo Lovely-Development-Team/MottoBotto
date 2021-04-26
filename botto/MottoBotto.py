@@ -36,7 +36,7 @@ class MottoBotto(discord.Client):
         log.info("Responding to phrases: %s", self.config["triggers"])
         log.info("Rules: %s", self.config["rules"])
 
-        intents = discord.Intents(messages=True, members=True, guilds=True)
+        intents = discord.Intents(messages=True, members=True, guilds=True, reactions=True)
         super().__init__(intents=intents)
 
     async def on_ready(self):
@@ -47,6 +47,47 @@ class MottoBotto(discord.Client):
     ):
         if reaction := self.config["reactions"].get(reaction_type, default):
             await message.add_reaction(reaction)
+
+    async def on_raw_reaction_add(self, payload):
+
+        if not payload.emoji.name == self.config["approval_reaction"]:
+            # This reaction isn't our approval reaction
+            return
+
+        log.info(f"Approval reaction received: {payload}")
+        channel = await self.fetch_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        log.info(f"Message: {message}")
+        log.info(f"Reactions: {message.reactions}")
+
+        pending_reaction = any(
+            r.me and r.emoji == self.config["reactions"]["pending"] for r in message.reactions
+        )
+        if not pending_reaction:
+            log.info(f"Ignoring message not pending approval.")
+            return
+
+        motto_message: Message = message.reference.resolved
+        log.info(f"Motto Message: {motto_message} / {motto_message.author.id}")
+        if motto_message.author.id != payload.user_id:
+            log.info(f"Ignoring approval from somebody other than motto author.")
+            return
+
+        motto_record = self.mottos.match("Message ID", str(motto_message.id))
+        if not motto_record:
+            log.info(f"Couldn't find matching message in Airtable.")
+            return
+
+        actual_motto = self.clean_message(motto_message)
+
+        if self.is_repeat_message(motto_message, check_id=False):
+            self.mottos.delete(motto_record["id"])
+            await reactions.duplicate(self, message)
+            return
+
+        self.mottos.update(motto_record["id"], {"Motto": actual_motto, "Approved by Author": True})
+        await reactions.stored(self, message, motto_message)
+
 
     async def on_message(self, message: Message):
 
@@ -67,6 +108,26 @@ class MottoBotto(discord.Client):
 
         await self.process_suggestion(message)
 
+    def clean_message(self, message: Message) -> str:
+
+        actual_motto = message.content
+
+        for channel_id in CHANNEL_REGEX.findall(actual_motto):
+            channel = self.get_channel(int(channel_id))
+            if not channel:
+                continue
+            actual_motto = actual_motto.replace(f"<#{channel_id}>", f"#{channel.name}")
+
+        return actual_motto
+
+    def is_repeat_message(self, message: Message, check_id=True) -> str:
+        filter_motto = self.clean_message(message).replace("'", r"\'")
+        filter_formula = f"REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', ''), '\s+', ' ') = REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', ''), '\s+', ' ')"
+        if check_id:
+            filter_formula = f"OR({filter_formula}, '{str(message.id)}' = {{Message ID}})"
+        log.debug("Searching with filter %r", filter_formula)
+        matching_mottos = self.mottos.get_all(filterByFormula=filter_formula)
+        return bool(matching_mottos)
 
     def is_valid_message(self, message: Message) -> bool:
         if not all(
@@ -83,11 +144,11 @@ class MottoBotto(discord.Client):
             member_record = self.members.insert(data)
             log.debug(f"Added member {member_record} to AirTable")
         return member_record
-    
+
     async def update_name(self, member_record: dict, member: Member):
         airtable_name = member_record["fields"].get("Name")
         discord_name = member.nick
-        if airtable_name != discord_name: 
+        if airtable_name != discord_name:
             update_dict = {
                 "Name": discord_name,
             }
@@ -95,13 +156,13 @@ class MottoBotto(discord.Client):
             log.debug(
                 f"Recorded name change '{airtable_name}' to '{discord_name}'"
             )
-        
-    async def update_emoji(self, member_record: dict, emoji: str):        
+
+    async def update_emoji(self, member_record: dict, emoji: str):
         data = {"Emoji": emoji}
 
         log.debug(f"Update data: {data}")
         log.debug(f"Member record: {member_record}")
-        
+
         if member_record["fields"].get("Emoji") != data.get("Emoji"):
             log.debug("Updating member emoji details")
             self.members.update(member_record["id"], data)
@@ -150,20 +211,9 @@ class MottoBotto(discord.Client):
 
         log.info(f'Motto suggestion incoming: "{motto_message.content}"')
 
-        actual_motto = motto_message.content
+        actual_motto = self.clean_message(motto_message)
 
-        for channel_id in CHANNEL_REGEX.findall(actual_motto):
-            channel = self.get_channel(int(channel_id))
-            if not channel:
-                continue
-            actual_motto = actual_motto.replace(f"<#{channel_id}>", f"#{channel.name}")
-
-        filter_motto = actual_motto.replace("'", r"\'")
-
-        filter_formula = f"REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', ''), '\s+', ' ') = REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', ''), '\s+', ' ')"
-        log.debug("Searching with filter %r", filter_formula)
-        matching_mottos = self.mottos.get_all(filterByFormula=filter_formula)
-        if matching_mottos:
+        if self.is_repeat_message(motto_message):
             await reactions.duplicate(self, message)
             return
 
@@ -171,22 +221,26 @@ class MottoBotto(discord.Client):
         nominee = await self.get_or_add_member(motto_message.author)
         nominator = await self.get_or_add_member(message.author)
 
+        auto_approve = any(r.name.strip("'") == self.config["approval_opt_in_role"] for r in motto_message.author.roles)
+
         motto_data = {
-            "Motto": actual_motto,
+            "Motto": actual_motto if auto_approve else "",
             "Message ID": str(motto_message.id),
             "Date": motto_message.created_at.isoformat(),
             "Member": [nominee["id"]],
             "Nominated By": [nominator["id"]],
         }
+
         self.mottos.insert(motto_data)
         log.debug("Added Motto to AirTable")
 
-        await reactions.stored(self, message, motto_message)
-        
+        if auto_approve:
+            await reactions.stored(self, message, motto_message)
+        else:
+            await reactions.pending(self, message, motto_message)
+
         await self.update_name(nominee, motto_message.author)
         await self.update_name(nominator, message.author)
-    
-    
 
     async def process_dm(self, message: Message):
 
