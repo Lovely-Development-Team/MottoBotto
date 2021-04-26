@@ -22,5 +22,6 @@
             "Accurate[.,!] New motto\\?"
         ]
     },
-    "should_reply": false
+    "should_reply": false,
+    "delete_unapproved_after_hours": 24
 }
