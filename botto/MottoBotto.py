@@ -36,7 +36,9 @@ class MottoBotto(discord.Client):
         log.info("Responding to phrases: %s", self.config["triggers"])
         log.info("Rules: %s", self.config["rules"])
 
-        intents = discord.Intents(messages=True, members=True, guilds=True, reactions=True)
+        intents = discord.Intents(
+            messages=True, members=True, guilds=True, reactions=True
+        )
         super().__init__(intents=intents)
 
     async def on_ready(self):
@@ -61,7 +63,8 @@ class MottoBotto(discord.Client):
         log.info(f"Reactions: {message.reactions}")
 
         pending_reaction = any(
-            r.me and r.emoji == self.config["reactions"]["pending"] for r in message.reactions
+            r.me and r.emoji == self.config["reactions"]["pending"]
+            for r in message.reactions
         )
         if not pending_reaction:
             log.info(f"Ignoring message not pending approval.")
@@ -85,9 +88,10 @@ class MottoBotto(discord.Client):
             await reactions.duplicate(self, message)
             return
 
-        self.mottos.update(motto_record["id"], {"Motto": actual_motto, "Approved by Author": True})
+        self.mottos.update(
+            motto_record["id"], {"Motto": actual_motto, "Approved by Author": True}
+        )
         await reactions.stored(self, message, motto_message)
-
 
     async def on_message(self, message: Message):
 
@@ -124,15 +128,21 @@ class MottoBotto(discord.Client):
         filter_motto = self.clean_message(message).replace("'", r"\'")
         filter_formula = f"REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', ''), '\s+', ' ') = REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', ''), '\s+', ' ')"
         if check_id:
-            filter_formula = f"OR({filter_formula}, '{str(message.id)}' = {{Message ID}})"
+            filter_formula = (
+                f"OR({filter_formula}, '{str(message.id)}' = {{Message ID}})"
+            )
         log.debug("Searching with filter %r", filter_formula)
         matching_mottos = self.mottos.get_all(filterByFormula=filter_formula)
         return bool(matching_mottos)
 
     def is_valid_message(self, message: Message) -> bool:
-        if not all(
-            r.search(message.content) for r in self.config["rules"]["matching"]
-        ) or any(r.search(message.content) for r in self.config["rules"]["excluding"]) or any(r.match(message.content) for r in self.config["triggers"]["new_motto"]):
+        if (
+            not all(r.search(message.content) for r in self.config["rules"]["matching"])
+            or any(r.search(message.content) for r in self.config["rules"]["excluding"])
+            or any(
+                r.match(message.content) for r in self.config["triggers"]["new_motto"]
+            )
+        ):
             return False
         return True
 
@@ -153,9 +163,7 @@ class MottoBotto(discord.Client):
                 "Name": discord_name,
             }
             self.members.update(member_record["id"], update_dict)
-            log.debug(
-                f"Recorded name change '{airtable_name}' to '{discord_name}'"
-            )
+            log.debug(f"Recorded name change '{airtable_name}' to '{discord_name}'")
 
     async def update_emoji(self, member_record: dict, emoji: str):
         data = {"Emoji": emoji}
@@ -221,7 +229,10 @@ class MottoBotto(discord.Client):
         nominee = await self.get_or_add_member(motto_message.author)
         nominator = await self.get_or_add_member(message.author)
 
-        auto_approve = any(r.name.strip("'") == self.config["approval_opt_in_role"] for r in motto_message.author.roles)
+        auto_approve = any(
+            r.name.strip("'") == self.config["approval_opt_in_role"]
+            for r in motto_message.author.roles
+        )
 
         motto_data = {
             "Motto": actual_motto if auto_approve else "",
