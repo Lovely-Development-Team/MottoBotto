@@ -39,6 +39,7 @@ def parse(config):
         "should_reply": True,
         "approval_reaction": "mottoapproval",
         "approval_opt_in_role": "Motto Opt In",
+        "leaderboard_link": None,
     }
 
     # Dictionary config options
@@ -46,7 +47,7 @@ def parse(config):
         defaults[key].update(config.get(key, {}))
 
     # String config options
-    for key in ("should_reply", "approval_reaction", "approval_opt_in_role"):
+    for key in ("should_reply", "approval_reaction", "approval_opt_in_role", "leaderboard_link"):
         defaults[key] = config.get(key, defaults[key])
 
     # Compile trigger regexes
