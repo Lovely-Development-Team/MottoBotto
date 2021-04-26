@@ -2,6 +2,7 @@ import logging
 import re
 from typing import Optional
 from emoji import UNICODE_EMOJI
+import subprocess
 
 import discord
 from airtable import Airtable
@@ -244,9 +245,17 @@ class MottoBotto(discord.Client):
 
     async def process_dm(self, message: Message):
 
+        if message.author == self.user:
+            return
+
         log.info(
             f"Received direct message (ID: {message.id}) from {message.author}: {message.content}"
         )
+
+        if message.content == "!version":
+            git_version = subprocess.check_output(["git", "describe", "--tags"]).decode("utf-8")
+            await message.reply(f"Version: {git_version}")
+            return
 
         if emoji_trigger := [
             t
