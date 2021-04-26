@@ -268,6 +268,10 @@ class MottoBotto(discord.Client):
             await message.reply(f"Version: {git_version}")
             return
 
+        if message.content == "!link" and self.config["leaderboard_link"] != None:
+            await message.reply(self.config["leaderboard_link"])
+            return
+
         if emoji_trigger := [
             t
             for t in self.config["triggers"]["change_emoji"]

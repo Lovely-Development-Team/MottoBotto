@@ -51,6 +51,10 @@ To add an emoji to your name on the leaderboard, change the emoji, or remove it,
 
 MottoBotto will respond with a reaction indicating a successful update or a problem with your request.
 
+### Viewing the leaderboard
+
+If a leaderboard is configured for MottoBotto, and MottoBotto has been added to the server with the permission to send messages, you can retrieve a link to it by using the `!link` command.
+
 ## Configuring MottoBotto
 
 MottoBotto requires a `config.json` configuration file, with the following sections.
@@ -76,6 +80,7 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 |                        | `change_emoji`  | `!emoji`                         | No       | A list of regular expressions to match against every incoming direct message to recognise a request to change the user's emoji. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
 | `approval_reaction`    | N/A             | `mottoapproval`                  | No       | The name of the custom emoji used to approve the addition of one of your mottos. |
 | `approval_opt_in_role` | N/A             | `Motto Opt In`                   | No       | The name of the role for a user to join to auto-approval all motto suggestions. |
+| `leaderboard_link`     | N/A             | `None`                           | No       | A link to the motto leaderboard. If not configured, the `!link` DM will not be recognised. |
 
 \*Note: Regular expressions used for motto nomination rule matching are matched with case sensitivity, and must include the `^` and `$` if you wish to match against the entire message string. Those used for trigger phrases are matched without regard for case.
 
