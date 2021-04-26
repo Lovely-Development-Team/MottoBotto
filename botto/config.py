@@ -24,24 +24,38 @@ def parse(config):
             "include": [],
             "exclude": [],
         },
-        "reactions": {},
+        "reactions": {
+            "success": "📥",
+            "repeat": "♻️",
+            "unknown": "❓",
+            "skynet": "❌",
+            "fishing": "🎣",
+            "pending": "⏳",
+        },
         "triggers": {
             "new_motto": [r"!motto$"],
             "change_emoji": [r"!emoji"],
         },
         "should_reply": True,
+        "approval_reaction": "mottoapproval",
+        "approval_opt_in_role": "Motto Opt In",
     }
 
+    # Dictionary config options
     for key in ("authentication", "channels", "reactions", "triggers", "rules"):
         defaults[key].update(config.get(key, {}))
 
-    defaults["should_reply"] = config.get("should_reply", defaults["should_reply"])
+    # String config options
+    for key in ("should_reply", "approval_reaction", "approval_opt_in_role"):
+        defaults[key] = config.get(key, defaults[key])
 
+    # Compile trigger regexes
     for key, triggers in defaults["triggers"].items():
         defaults["triggers"][key] = [
             re.compile(f"^{t}", re.IGNORECASE) for t in triggers
         ]
 
+    # Compile rule regexes
     for key, rules in defaults["rules"].items():
         defaults["rules"][key] = [re.compile(r, re.MULTILINE) for r in rules]
 

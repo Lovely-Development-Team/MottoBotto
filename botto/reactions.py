@@ -37,14 +37,21 @@ async def invalid(botto: MottoBotto, message: Message):
 async def duplicate(botto: MottoBotto, message: Message):
     log.debug("Ignoring motto, it's a duplicate.")
     await botto.add_reaction(message, "repeat", "😅")
+    await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
 
 
 async def stored(botto: MottoBotto, message: Message, motto_message: Message):
+    await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
     await botto.add_reaction(message, "success", "📥")
     log.debug("Reaction added")
     if botto.config["should_reply"]:
         await message.reply(f'"{motto_message.content}" will be considered!')
     log.debug("Reply sent")
+
+
+async def pending(botto: MottoBotto, message: Message, motto_message: Message):
+    await botto.add_reaction(message, "pending", "⏳")
+    log.debug("Reaction added")
 
 
 async def invalid_emoji(botto: MottoBotto, message: Message):
