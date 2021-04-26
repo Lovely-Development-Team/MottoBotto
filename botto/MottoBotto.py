@@ -75,26 +75,16 @@ class MottoBotto(discord.Client):
             return False
         return True
 
-    async def get_or_add_member(self, member: Member, emoji: Optional[str] = None):
+    async def get_or_add_member(self, member: Member):
         member_record = self.members.match("Discord ID", member.id)
-
-        data = {}
-        if emoji is not None:
-            data["Emoji"] = emoji
-
-        log.debug(f"Update data: {data}")
-        log.debug(f"Member record: {member_record}")
-
         if not member_record:
             data["Name"] = member.nick
             data["Discord ID"] = str(member.id)
             member_record = self.members.insert(data)
             log.debug(f"Added member {member_record} to AirTable")
-
-        elif member_record["fields"].get("Emoji") != data.get("Emoji"):
-            log.debug("Updating member emoji details")
-            self.members.update(member_record["id"], data)
-            
+        return member_record
+    
+    async def update_name(self, member_record: dict, member: Member):
         airtable_name = member_record["fields"].get("Name")
         discord_name = member.nick
         if airtable_name != discord_name: 
@@ -105,9 +95,16 @@ class MottoBotto(discord.Client):
             log.debug(
                 f"Recorded name change '{airtable_name}' to '{discord_name}'"
             )
-            
+        
+    async def update_emoji(self, member_record: dict, emoji: str):        
+        data = {"Emoji": emoji}
 
-        return member_record
+        log.debug(f"Update data: {data}")
+        log.debug(f"Member record: {member_record}")
+        
+        if member_record["fields"].get("Emoji") != data.get("Emoji"):
+            log.debug("Updating member emoji details")
+            self.members.update(member_record["id"], data)
 
     def update_existing_member(self, member: Member) -> Optional[dict]:
         """
@@ -185,6 +182,11 @@ class MottoBotto(discord.Client):
         log.debug("Added Motto to AirTable")
 
         await reactions.stored(self, message, motto_message)
+        
+        await self.update_name(nominee, motto_message.author)
+        await self.update_name(nominator, message.author)
+    
+    
 
     async def process_dm(self, message: Message):
 
@@ -203,11 +205,13 @@ class MottoBotto(discord.Client):
 
             if not content:
                 log.debug(f"Removing emoji")
-                await self.get_or_add_member(message.author, emoji="")
+                member = await self.get_or_add_member(message.author)
+                await self.update_emoji(member, emoji="")
                 await reactions.valid_emoji(self, message)
             elif content in UNICODE_EMOJI["en"]:
                 log.debug(f"Updating emoji")
-                await self.get_or_add_member(message.author, emoji=content)
+                member = await self.get_or_add_member(message.author)
+                await self.update_emoji(member, emoji=content)
                 await reactions.valid_emoji(self, message)
             else:
                 await reactions.invalid_emoji(self, message)
