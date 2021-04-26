@@ -47,5 +47,5 @@ jobs:
           SCRIPT: > 
             cd /opt/MottoBotto && 
             rm /opt/MottoBotto/botto_src/logs &&
-            ln -s /opt/MottoBotto/logs /opt/MottoBotto/botto_src/logs
+            ln -s /opt/MottoBotto/logs /opt/MottoBotto/botto_src/logs &&
             supervisorctl restart mottobotto
