@@ -132,7 +132,7 @@ class MottoBotto(discord.Client):
     def is_valid_message(self, message: Message) -> bool:
         if not all(
             r.search(message.content) for r in self.config["rules"]["matching"]
-        ) or any(r.search(message.content) for r in self.config["rules"]["excluding"]):
+        ) or any(r.search(message.content) for r in self.config["rules"]["excluding"]) or any(r.match(message.content) for r in self.config["triggers"]["new_motto"]):
             return False
         return True
 
