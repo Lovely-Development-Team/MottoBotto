@@ -1,5 +1,7 @@
 import logging
+import random
 import re
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from emoji import UNICODE_EMOJI
 import subprocess
@@ -110,6 +112,8 @@ class MottoBotto(discord.Client):
         else:
             if channel_name in self.config["channels"]["exclude"]:
                 return
+
+        await self.remove_unapproved_messages()
 
         await self.process_suggestion(message)
 
@@ -297,3 +301,15 @@ class MottoBotto(discord.Client):
             return
 
         await reactions.unknown_dm(self, message)
+
+    async def remove_unapproved_messages(self):
+
+        # Don't do this for every message
+        if random.random() < 0.1:
+            for motto in self.mottos.search("Motto", ""):
+                motto_date = datetime.strptime(motto['fields']['Date'], "%Y-%m-%dT%H:%M:%S.%f%z")
+                motto_expiry_date = datetime.now(timezone.utc) - timedelta(hours=self.config['delete_unapproved_after_hours'])
+                if motto_date < motto_expiry_date:
+                    log.debug(f'Deleting motto {motto["id"]} - message ID {motto["fields"]["Message ID"]}')
+                    self.mottos.delete(motto['id'])
+
