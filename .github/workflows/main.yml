@@ -32,6 +32,7 @@ jobs:
           USERNAME: ${{ secrets.DEPLOY_USERNAME }}
           PASSPHRASE: ${{ secrets.DEPLOY_SSHKEY_PASSPHRASE }}
           KEY: ${{ secrets.DEPLOY_SSHKEY }}
+          RM: true
         with:
           source: "."
           target: "/opt/MottoBotto/botto_src/"
