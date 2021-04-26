@@ -156,6 +156,7 @@ MottoBotto will respond to the message with one of two reactions (the emoji for 
 ## Licensing
 
 This code is copyright the contributors.
+The MottoBotto name was created by izzystardust.
 
 [MottoBotto is licensed under the Mozilla Public License 2.0](LICENSE)
 
