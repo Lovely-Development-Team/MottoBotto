@@ -44,4 +44,8 @@ jobs:
           USERNAME: ${{ secrets.DEPLOY_USERNAME }}
           PASSPHRASE: ${{ secrets.DEPLOY_SSHKEY_PASSPHRASE }}
           KEY: ${{ secrets.DEPLOY_SSHKEY }}
-          SCRIPT: "cd /opt/MottoBotto && supervisorctl restart mottobotto"
+          SCRIPT: > 
+            cd /opt/MottoBotto && 
+            supervisorctl restart mottobotto && 
+            rm /opt/MottoBotto/botto_src/logs &&
+            ln -s /opt/MottoBotto/logs /opt/MottoBotto/botto_src/logs"
