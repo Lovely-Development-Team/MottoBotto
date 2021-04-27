@@ -95,6 +95,12 @@ class MottoBotto(discord.Client):
             motto_record["id"], {"Motto": actual_motto, "Approved by Author": True}
         )
         await reactions.stored(self, message, motto_message)
+        
+        nominee = await self.get_or_add_member(motto_message.author)
+        nominator = await self.get_or_add_member(message.author)
+        await self.update_name(nominee, motto_message.author)
+        await self.update_name(nominator, message.author)
+
 
     async def on_message(self, message: Message):
 
