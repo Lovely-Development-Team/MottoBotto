@@ -33,7 +33,7 @@ def parse(config):
             "pending": "⏳",
         },
         "triggers": {
-            "new_motto": [r"!motto$"],
+            "new_motto": [],
             "change_emoji": [r"!emoji"],
         },
         "should_reply": True,
