@@ -209,8 +209,12 @@ class MottoBotto(discord.Client):
 
     async def process_suggestion(self, message: Message):
 
+        triggers = self.config["triggers"]["new_motto"]
+        if self.config["trigger_on_mention"]:
+            triggers = [re.compile(rf"^<@!{self.user.id}>")] + triggers
+
         if not any(
-            t.match(message.content) for t in self.config["triggers"]["new_motto"]
+            t.match(message.content) for t in triggers
         ):
             return
 
