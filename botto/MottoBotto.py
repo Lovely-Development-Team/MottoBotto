@@ -164,21 +164,32 @@ class MottoBotto(discord.Client):
         member_record = self.members.match("Discord ID", member.id)
         if not member_record:
             data = {}
-            data["Name"] = self.get_name(member)
+            data["Username"] = member.name
             data["Discord ID"] = str(member.id)
             member_record = self.members.insert(data)
             log.debug(f"Added member {member_record} to AirTable")
         return member_record
 
     async def update_name(self, member_record: dict, member: Member):
-        airtable_name = member_record["fields"].get("Name")
-        discord_name = self.get_name(member)
-        if airtable_name != discord_name:
-            update_dict = {
-                "Name": discord_name,
-            }
+        airtable_username = member_record["fields"].get("Username")
+        discord_username = member.name
+        update_dict = {}
+        if airtable_username != discord_username:
+            update_dict["Username"] = discord_username
+            
+        if member_record["fields"].get("Use Nickname"):
+            airtable_nickname = member_record["fields"].get("Nickname")
+            discord_nickname = self.get_name(member)
+            
+            if airtable_nickname != discord_nickname:
+                update_dict["Nickname"] = discord_nickname
+        elif member_record["fields"].get("Nickname"):
+            update_dict["Nickname"] = ""
+
+        if update_dict:
+            log.debug(f"Recorded changes {update_dict}")
             self.members.update(member_record["id"], update_dict)
-            log.debug(f"Recorded name change '{airtable_name}' to '{discord_name}'")
+            
 
     async def update_emoji(self, member_record: dict, emoji: str):
         data = {"Emoji": emoji}
