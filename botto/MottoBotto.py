@@ -151,11 +151,14 @@ class MottoBotto(discord.Client):
             return False
         return True
 
+    def get_name(self, member: Member):
+        return member.nick if getattr(member, 'nick', None) else member.display_name
+
     async def get_or_add_member(self, member: Member):
         member_record = self.members.match("Discord ID", member.id)
         if not member_record:
             data = {}
-            data["Name"] = member.nick if member.nick else member.display_name
+            data["Name"] = self.get_name(member)
             data["Discord ID"] = str(member.id)
             member_record = self.members.insert(data)
             log.debug(f"Added member {member_record} to AirTable")
@@ -163,7 +166,7 @@ class MottoBotto(discord.Client):
 
     async def update_name(self, member_record: dict, member: Member):
         airtable_name = member_record["fields"].get("Name")
-        discord_name = member.nick if member.nick else member.display_name
+        discord_name = self.get_name(member)
         if airtable_name != discord_name:
             update_dict = {
                 "Name": discord_name,
