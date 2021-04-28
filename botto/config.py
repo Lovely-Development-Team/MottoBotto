@@ -35,6 +35,7 @@ def parse(config):
             "invalid_emoji": "⚠️",
             "valid_emoji": "✅",
             "reject": "❌",
+            "delete_confirmed": "✅",
         },
         "triggers": {
             "new_motto": [],
@@ -46,6 +47,7 @@ def parse(config):
         "leaderboard_link": None,
         "delete_unapproved_after_hours": 24,
         "trigger_on_mention": True,
+        "confirm_delete_reaction": "🧨",
     }
 
     # Dictionary config options
