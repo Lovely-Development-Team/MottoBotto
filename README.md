@@ -142,9 +142,10 @@ MottoBotto will always react with emoji, but can also be configured to react wit
 * 📥 MottoBotto added the nominated motto to the collection: "'Nominated-motto' will be considered!"
 * ❓ MottoBotto does not know what you're responding to (i.e. the nominator has forgotten to reply to the motto they are nominating): "I see no motto!"
 * ♻️ MottoBotto has previously added the nominated motto to the collection. There is currently no corresponding text reply for this situation.
-* ❌ MottoBotto is not allowing itself to be nominated (i.e. the nominated message was written by MottoBotto): "Skynet prevention"
-* 🎣 MottoBotto has rejected the motto for motto-fishing (i.e. the motto was written by the nominator): "Motto self-suggestions are forbidden"
-* 🙅 MottoBotto has rejected the motto for violating at least one rule (e.g. the motto is shorter than two words, the motto @-mentions another user, etc.) There is currently no corresponding text reply for this situation.
+* ❌ MottoBotto is either:
+  * not allowing itself to be nominated (i.e. the nominated message was written by MottoBotto): "Skynet prevention"
+  * rejecting the motto for motto-fishing (i.e. the motto was written by the nominator): "Motto self-suggestions are forbidden"
+  * rejecting the motto for violating at least one rule (e.g. the motto is shorter than two words, the motto @-mentions another user, etc.) There is currently no corresponding text reply for this situation.
 
 #### Change Emoji
 
