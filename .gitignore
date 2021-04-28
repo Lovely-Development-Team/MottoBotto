@@ -134,3 +134,5 @@ config.ini
 config.json
 logs/log
 logs/log*
+
+**/.DS_Store
