@@ -50,13 +50,11 @@ def parse(config):
         "confirm_delete_reaction": "🧨",
     }
 
-    # Dictionary config options
-    for key in ("authentication", "channels", "reactions", "triggers", "rules"):
-        defaults[key].update(config.get(key, {}))
-
-    # String config options
-    for key in ("should_reply", "approval_reaction", "approval_opt_in_role", "delete_unapproved_after_hours", "leaderboard_link", "trigger_on_mention"):
-        defaults[key] = config.get(key, defaults[key])
+    for key in defaults.keys():
+        if isinstance(defaults[key], dict):
+            defaults[key].update(config.get(key, {}))
+        else:
+            defaults[key] = config.get(key, defaults[key])
 
     # Compile trigger regexes
     for key, triggers in defaults["triggers"].items():
