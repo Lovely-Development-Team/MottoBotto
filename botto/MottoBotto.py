@@ -280,7 +280,7 @@ class MottoBotto(discord.Client):
 
         triggers = self.config["triggers"]["new_motto"]
         if self.config["trigger_on_mention"]:
-            triggers = [re.compile(rf"^<@!{self.user.id}>")] + triggers
+            triggers = [re.compile(rf"^<@!?\s?{self.user.id}>")] + triggers
 
         if not any(t.match(message.content) for t in triggers):
             return
