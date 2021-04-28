@@ -31,10 +31,11 @@ def parse(config):
             "skynet": "❌",
             "fishing": "🎣",
             "pending": "⏳",
+            "invalid_emoji": "⚠️",
+            "valid_emoji": "✅",
         },
         "triggers": {
             "new_motto": [],
-            "change_emoji": [r"!emoji"],
         },
         "should_reply": True,
         "approval_reaction": "mottoapproval",

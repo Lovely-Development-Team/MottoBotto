@@ -3,10 +3,12 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 
 ## Default Usage TLDR
 
-* Nominate somebody else's message as a potential motto with `!motto` in a reply to the message.
+* Nominate somebody else's message as a potential motto with `@MottoBotto` in a reply to the message.
 * Approve somebody's nomination of your message with an emoji reaction or a by joining an auto-approval role.
 * View the [list of approved mottos and the leaderboard](https://dwrss.github.io/MottoBotto/).
 * Change your leaderboard emoji with a direct message to MottoBotto of `!emoji <new-emoji>`.
+* Get a link to the leaderboard with a direct message to MottoBotto of `!link`.
+* Send `!help` as a direct message to MottoBotto to get a list of possible commands.
 
 
 ## Interacting with MottoBotto
@@ -22,7 +24,7 @@ Mottos that are considered valid by MottoBotto are:
 * are not purely punctuation, emoji, numeric, or url, and
 * do not tag any Discord users.
 
-Any suggested motto that doesn't conform to these rules will be rejected. 
+Any suggested motto that doesn't conform to these rules will be rejected.
 
 MottoBotto will also reject any nomination that is a statement made by either yourself or MottoBotto.
 
@@ -44,7 +46,7 @@ If you are happy for any message you send to be added to the leaderboard without
 
 ### Adding or changing your emoji on the leaderboard
 
-To add an emoji to your name on the leaderboard, change the emoji, or remove it, use the [change emoji trigger](#change-emoji) in a direct message to MottoBotto. The default is `!emoji`:
+To add an emoji to your name on the leaderboard, change the emoji, or remove it, send `!emoji` as a direct message to MottoBotto.
 
 * `!emoji 🚀` will set the ​🚀​ emoji for your user.
 * `!emoji` will clear any emoji for your user.
@@ -53,7 +55,7 @@ MottoBotto will respond with a reaction indicating a successful update or a prob
 
 ### Viewing the leaderboard
 
-If a leaderboard is configured for MottoBotto, and MottoBotto has been added to the server with the permission to send messages, you can retrieve a link to it by using the `!link` command.
+If a leaderboard is configured for MottoBotto, you can retrieve a link to it by sending the `!link` command as a direct message to MottoBotto.
 
 ## Configuring MottoBotto
 
@@ -77,11 +79,12 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 | `rules`                     | `matching`      | `^.{5,240}$`<br />`^(\S+\s+)\S+` | No       | A list of regular expressions to match against the nominated motto text that must all match for the motto to be accepted. The message is first stripped of leading and trailing whitespace before matching. * |
 |                             | `excluding`     | `<@.*>`<br />`^[\d\W\s]*$`       | No       | A list of regular expressions to match against the nominated motto text, where any successful match will result in an invalid motto response. The message is first stripped of leading and trailing whitespace before matching. * |
 | `triggers`                  | `new_motto`     | `!motto$`                        | No       | A list of regular expressions to match against every incoming message in the relevant channels (see `channels` above) to recognise a new nomination. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
-|                             | `change_emoji`  | `!emoji`                         | No       | A list of regular expressions to match against every incoming direct message to recognise a request to change the user's emoji. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
 | `approval_reaction`         | N/A             | `mottoapproval`                  | No       | The name of the custom emoji used to approve the addition of one of your mottos. |
 | `approval_opt_in_role`      | N/A             | `Motto Opt In`                   | No       | The name of the role for a user to join to auto-approval all motto suggestions. |
 | `human_moderation_required` | N/A             | `false`                          | No       | Whether to set the "Approved" flag in Airtable by default or not. If `false`, all mottos added are automatically approved for moderation status. |
 | `leaderboard_link`          | N/A             | `None`                           | No       | A link to the motto leaderboard. If not configured, the `!link` DM will not be recognised. |
+| `trigger_on_mention`            | N/A             | `true`                           | No       | Whether a message that starts with an `@` mention of MottoBotto triggers a nomination. If this is `false`, then at least one `new_motto` trigger must be configured. |
+| `delete_unapproved_after_hours` | N/A             | `24`                             | No       | The number of hours before an unapproved motto suggestion is removed from Airtable. |
 
 \*Note: Regular expressions used for motto nomination rule matching are matched with case sensitivity, and must include the `^` and `$` if you wish to match against the entire message string. Those used for trigger phrases are matched without regard for case.
 
@@ -132,7 +135,7 @@ The trigger phrases detailed below are the defaults.  Any others for each trigge
 
 #### Motto Nomination
 
-`!motto`
+`@MottoBotto`
 
 MottoBotto will always react with emoji, but can also be configured to react with a text message response. The defaults for both are as follows, although the emoji reactions can be changed in configuration:
 * ⏳ MottoBotto is waiting for approval from the motto's author before adding the motto to the leaderboard. There is currently no corresponding text reply for this situation.
