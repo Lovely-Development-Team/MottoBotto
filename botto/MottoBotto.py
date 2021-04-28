@@ -55,51 +55,90 @@ class MottoBotto(discord.Client):
 
     async def on_raw_reaction_add(self, payload):
 
-        if not payload.emoji.name == self.config["approval_reaction"]:
-            # This reaction isn't our approval reaction
+        if payload.emoji.name not in (self.config["approval_reaction"], self.config["confirm_delete_reaction"]):
             return
 
-        log.info(f"Approval reaction received: {payload}")
+        log.info(f"Reaction received: {payload}")
+
         channel = await self.fetch_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
+        log.info(f"Channel: {channel}")
         log.info(f"Message: {message}")
         log.info(f"Reactions: {message.reactions}")
 
-        pending_reaction = any(
-            r.me and r.emoji == self.config["reactions"]["pending"]
-            for r in message.reactions
-        )
-        if not pending_reaction:
-            log.info(f"Ignoring message not pending approval.")
+        if payload.emoji.name == self.config["approval_reaction"]:
+
+            pending_reaction = any(
+                r.me and r.emoji == self.config["reactions"]["pending"]
+                for r in message.reactions
+            )
+            if not pending_reaction:
+                log.info(f"Ignoring message not pending approval.")
+                return
+
+            motto_message: Message = message.reference.resolved
+            log.info(f"Motto Message: {motto_message} / {motto_message.author.id}")
+            if motto_message.author.id != payload.user_id:
+                log.info(f"Ignoring approval from somebody other than motto author.")
+                return
+
+            motto_record = self.mottos.match("Message ID", str(motto_message.id))
+            if not motto_record:
+                log.info(f"Couldn't find matching message in Airtable.")
+                return
+
+            actual_motto = self.clean_message(motto_message)
+
+            if self.is_repeat_message(motto_message, check_id=False):
+                self.mottos.delete(motto_record["id"])
+                await reactions.duplicate(self, message)
+                return
+
+            self.mottos.update(
+                motto_record["id"], {"Motto": actual_motto, "Approved by Author": True}
+            )
+            await reactions.stored(self, message, motto_message)
+
+            nominee = await self.get_or_add_member(motto_message.author)
+            nominator = await self.get_or_add_member(message.author)
+            await self.update_name(nominee, motto_message.author)
+            await self.update_name(nominator, message.author)
+
             return
 
-        motto_message: Message = message.reference.resolved
-        log.info(f"Motto Message: {motto_message} / {motto_message.author.id}")
-        if motto_message.author.id != payload.user_id:
-            log.info(f"Ignoring approval from somebody other than motto author.")
+        if payload.emoji.name == self.config["confirm_delete_reaction"]:
+
+            if message.author != self.user:
+                log.info(f"Ignoring message not by MottoBotto")
+                return
+
+            if not isinstance(channel, discord.DMChannel):
+                log.info(f"Ingoring reaction not in DM")
+                return
+
+            request = message.reference.resolved if message.reference else None
+            if not request or request.content.strip().lower() != "!delete":
+                log.info(f"Ignoring reaction to message not replying to !delete")
+                return
+
+            pending_reaction = any(
+                r.me and r.emoji == self.config["reactions"]["pending"]
+                for r in message.reactions
+            )
+            if not pending_reaction:
+                log.info(f"Ignoring message not pending approval.")
+                return
+
+            member_record = self.members.match("Discord ID", payload.user_id)
+            if member_record:
+                log.info(f"Removing mottos by {member_record['fields']['Username']}: {member_record['fields']['Mottos']}")
+                self.mottos.batch_delete(member_record["fields"]["Mottos"])
+                log.info(f"Removing {member_record['fields']['Username']} ({member_record['id']}")
+                self.members.delete(member_record["id"])
+            await message.remove_reaction(self.config["reactions"]["pending"], self.user)
+            await message.add_reaction(self.config["reactions"]["delete_confirmed"])
+            await channel.send("All of your data has been removed. If you approve or nominate another motto in future, your user data and any future approved mottos will be captured again.")
             return
-
-        motto_record = self.mottos.match("Message ID", str(motto_message.id))
-        if not motto_record:
-            log.info(f"Couldn't find matching message in Airtable.")
-            return
-
-        actual_motto = self.clean_message(motto_message)
-
-        if self.is_repeat_message(motto_message, check_id=False):
-            self.mottos.delete(motto_record["id"])
-            await reactions.duplicate(self, message)
-            return
-
-        self.mottos.update(
-            motto_record["id"], {"Motto": actual_motto, "Approved by Author": True}
-        )
-        await reactions.stored(self, message, motto_message)
-
-        nominee = await self.get_or_add_member(motto_message.author)
-        nominator = await self.get_or_add_member(message.author)
-        await self.update_name(nominee, motto_message.author)
-        await self.update_name(nominator, message.author)
 
 
     async def on_message(self, message: Message):
@@ -312,6 +351,7 @@ class MottoBotto(discord.Client):
 `!emoji`: Clear your emoji from the leaderboard.
 `!nick on`: Use your server-specific nickname on the leaderboard instead of your Discord username.
 `!nick off`: Use your Discord username on the leaderboard instead of your server-specific nickname.
+`!delete`: Remove all your data from the leaderboard. Confirmation is required.
 """.strip()
             )
             return
@@ -338,6 +378,11 @@ class MottoBotto(discord.Client):
                 await message.author.dm_channel.send("The leaderboard will now display your Discord username instead of your server-specific nickname. To return to your nickname, type `!nick on`.")
             else:
                 await message.author.dm_channel.send("To display your server-specific nickname on the leaderboard, type `!nick on`. To use your Discord username, type `!nick off`.")
+            return
+
+        if message_content == "!delete":
+            sent_message = await message.reply(f"Are you sure you want to delete all your data from the leaderboard? This will include any mottos of yours that were nominated by other people. If so, react to this message with {self.config['confirm_delete_reaction']}. Otherwise, ignore this message.")
+            await sent_message.add_reaction(self.config["reactions"]["pending"])
             return
 
         if message_content.startswith("!emoji"):

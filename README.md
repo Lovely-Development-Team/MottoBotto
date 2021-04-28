@@ -8,6 +8,7 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 * View the [list of approved mottos and the leaderboard](https://dwrss.github.io/MottoBotto/).
 * Change your leaderboard emoji with a direct message to MottoBotto of `!emoji <new-emoji>`.
 * Get a link to the leaderboard with a direct message to MottoBotto of `!link`.
+* Delete all your data from the leaderboard with a direct message to MottoBotto of `!delete`.
 * Send `!help` as a direct message to MottoBotto to get a list of possible commands.
 
 
@@ -57,6 +58,10 @@ MottoBotto will respond with a reaction indicating a successful update or a prob
 
 If a leaderboard is configured for MottoBotto, you can retrieve a link to it by sending the `!link` command as a direct message to MottoBotto.
 
+### Deleting your data
+
+To delete all your data from the leaderboard, which includes your user information and any mottos of yours that were nominated by other people, send the `!delete` command as a direct message to MottoBotto. You will receive a reply asking you to respond with a particular emoji to confirm you wish to proceed. After you have confirmed, all your data will be deleted.
+
 ## Configuring MottoBotto
 
 MottoBotto requires a `config.json` configuration file, with the following sections.
@@ -75,6 +80,9 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 |                             | `invalid`       | See below.                       | No       | The emoji to react to invalid nominations with.              |
 |                             | `invalid_emoji` | See below.                       | No       | The emoji to react to invalid emoji updates with.            |
 |                             | `valid_emoji`   | See below.                       | No       | The emoji to react to successful emoji updates with.         |
+| | `pending` | See below. | No | The emoji to react to nominations that have not yet been approved by the nominee. |
+| | `reject` | See below. | No | The emoji to react to any rejected nomination with. |
+| | `delete_confirmed` | See below. | No | The emoji to react with once the user's data has all been deleted after a `!delete` command. |
 | `should_reply`              | N/A             | `true`                           | No       | Whether to send message replies in response to nominations or not. If `false`, the only notifications users will receive are emoji reactions on their nomination message. |
 | `rules`                     | `matching`      | `^.{5,240}$`<br />`^(\S+\s+)\S+` | No       | A list of regular expressions to match against the nominated motto text that must all match for the motto to be accepted. The message is first stripped of leading and trailing whitespace before matching. * |
 |                             | `excluding`     | `<@.*>`<br />`^[\d\W\s]*$`       | No       | A list of regular expressions to match against the nominated motto text, where any successful match will result in an invalid motto response. The message is first stripped of leading and trailing whitespace before matching. * |
@@ -85,6 +93,7 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 | `leaderboard_link`          | N/A             | `None`                           | No       | A link to the motto leaderboard. If not configured, the `!link` DM will not be recognised. |
 | `trigger_on_mention`            | N/A             | `true`                           | No       | Whether a message that starts with an `@` mention of MottoBotto triggers a nomination. If this is `false`, then at least one `new_motto` trigger must be configured. |
 | `delete_unapproved_after_hours` | N/A             | `24`                             | No       | The number of hours before an unapproved motto suggestion is removed from Airtable. |
+| `confirm_delete_reaction` | N/A | 🧨 | No | The emoji the user is required to respond with to confirm deletion of all their data. |
 
 \*Note: Regular expressions used for motto nomination rule matching are matched with case sensitivity, and must include the `^` and `$` if you wish to match against the entire message string. Those used for trigger phrases are matched without regard for case.
 
