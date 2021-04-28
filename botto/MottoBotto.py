@@ -352,8 +352,14 @@ class MottoBotto(discord.Client):
         message_content = message.content.lower().strip()
 
         if message_content in ("!help", "help", "help!", "halp", "halp!", "!halp"):
+            trigger = (
+                f"@{self.user.display_name}"
+                if self.config["trigger_on_mention"]
+                else "a trigger word"
+            )
             await message.author.dm_channel.send(
                 f"""
+Reply to a great motto in the supported channels with {trigger} to tell me about it! (Note: you can't nominate yourself.)
 `!link`: Get a link to the leaderboard.
 `!emoji <emoji>`: Set your emoji on the leaderboard. A response of {self.config["reactions"]["invalid_emoji"]} means the emoji you requested is not valid.
 `!emoji`: Clear your emoji from the leaderboard.
