@@ -95,7 +95,7 @@ class MottoBotto(discord.Client):
             motto_record["id"], {"Motto": actual_motto, "Approved by Author": True}
         )
         await reactions.stored(self, message, motto_message)
-        
+
         nominee = await self.get_or_add_member(motto_message.author)
         nominator = await self.get_or_add_member(message.author)
         await self.update_name(nominee, motto_message.author)
@@ -170,17 +170,27 @@ class MottoBotto(discord.Client):
             log.debug(f"Added member {member_record} to AirTable")
         return member_record
 
+    async def set_nick_option(self, member: Member, on=False):
+        member_record = await self.get_or_add_member(member)
+        update = {
+            "Use Nickname": on,
+        }
+        if not on:
+            update["Nickname"] = None
+        log.debug(f"Recording changes for {member}: {update}")
+        self.members.update(member_record["id"], update)
+
     async def update_name(self, member_record: dict, member: Member):
         airtable_username = member_record["fields"].get("Username")
         discord_username = member.name
         update_dict = {}
         if airtable_username != discord_username:
             update_dict["Username"] = discord_username
-            
+
         if member_record["fields"].get("Use Nickname"):
             airtable_nickname = member_record["fields"].get("Nickname")
             discord_nickname = self.get_name(member)
-            
+
             if airtable_nickname != discord_nickname:
                 update_dict["Nickname"] = discord_nickname
         elif member_record["fields"].get("Nickname"):
@@ -189,7 +199,6 @@ class MottoBotto(discord.Client):
         if update_dict:
             log.debug(f"Recorded changes {update_dict}")
             self.members.update(member_record["id"], update_dict)
-            
 
     async def update_emoji(self, member_record: dict, emoji: str):
         data = {"Emoji": emoji}
@@ -293,22 +302,52 @@ class MottoBotto(discord.Client):
             f"Received direct message (ID: {message.id}) from {message.author}: {message.content}"
         )
 
-        if message.content == "!version":
+        message_content = message.content.lower().strip()
+
+        if message_content in ("!help", "help", "help!", "halp", "halp!", "!halp"):
+            await message.author.dm_channel.send(
+                f"""
+`!link`: Get a link to the leaderboard.
+`!emoji <emoji>`: Set your emoji on the leaderboard. A response of {self.config["reactions"]["invalid_emoji"]} means the emoji you requested is not valid.
+`!emoji`: Clear your emoji from the leaderboard.
+`!nick on`: Use your server-specific nickname on the leaderboard instead of your Discord username.
+`!nick off`: Use your Discord username on the leaderboard instead of your server-specific nickname.
+""".strip()
+            )
+            return
+
+        if message_content == "!version":
             git_version = subprocess.check_output(["git", "describe", "--tags"]).decode("utf-8")
-            await message.reply(f"Version: {git_version}")
+            await message.author.dm_channel.send(f"Version: {git_version}")
             return
 
-        if message.content == "!link" and self.config["leaderboard_link"] != None:
-            await message.reply(self.config["leaderboard_link"])
+        if message_content == "!link" and self.config["leaderboard_link"] != None:
+            await message.author.dm_channel.send(self.config["leaderboard_link"])
             return
 
-        if emoji_trigger := [
-            t
-            for t in self.config["triggers"]["change_emoji"]
-            if t.match(message.content)
-        ]:
+        if message_content.startswith("!nick"):
+            try:
+                _, option = message_content.split(None, 1)
+            except ValueError:
+                option = None
+            if option == "on":
+                await self.set_nick_option(message.author, on=True)
+                await message.author.dm_channel.send("The leaderboard will now display your server-specific nickname instead of your Discord username. To return to your username, type `!nick off`.")
+            elif option == "off":
+                await self.set_nick_option(message.author, on=False)
+                await message.author.dm_channel.send("The leaderboard will now display your Discord username instead of your server-specific nickname. To return to your nickname, type `!nick on`.")
+            else:
+                await message.author.dm_channel.send("To display your server-specific nickname on the leaderboard, type `!nick on`. To use your Discord username, type `!nick off`.")
+            return
 
-            content = emoji_trigger[0].sub("", message.content).strip().strip("\ufe0f")
+        if message_content.startswith("!emoji"):
+            try:
+                _, content = message_content.split(None, 1)
+            except ValueError:
+                content = None
+            else:
+                content = content.strip().strip("\ufe0f")
+
             log.debug(f"User {message.author} wants to change emoji: {content!r}")
 
             if not content:
