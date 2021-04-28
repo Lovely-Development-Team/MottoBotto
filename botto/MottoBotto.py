@@ -270,6 +270,7 @@ class MottoBotto(discord.Client):
             "Date": motto_message.created_at.isoformat(),
             "Member": [nominee["id"]],
             "Nominated By": [nominator["id"]],
+            "Approved": not self.config["human_moderation_required"],
         }
 
         self.mottos.insert(motto_data)
