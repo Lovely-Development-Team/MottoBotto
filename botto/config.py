@@ -39,6 +39,7 @@ def parse(config):
         "should_reply": True,
         "approval_reaction": "mottoapproval",
         "approval_opt_in_role": "Motto Opt In",
+        "human_moderation_required": False,
         "leaderboard_link": None,
         "delete_unapproved_after_hours": 24,
         "trigger_on_mention": True,

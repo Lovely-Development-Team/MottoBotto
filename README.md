@@ -59,28 +59,29 @@ If a leaderboard is configured for MottoBotto, and MottoBotto has been added to 
 
 MottoBotto requires a `config.json` configuration file, with the following sections.
 
-| Section                | Key             | Default Value                    | Required | Description                                                  |
-| ---------------------- | --------------- | -------------------------------- | -------- | ------------------------------------------------------------ |
-| `authentication`       | `discord`       | Empty string                     | Yes      | MottoBotto's DIscord bot token.                              |
-|                        | `airtable_key`  | Empty string                     | Yes      | The API key for access to Airtable's API.                    |
-|                        | `airtable_base` | Empty string                     | Yes      | The ID of the Airtable base to store the mottos.             |
-| `channels`             | `exclude`       | Empty list                       | No       | A list of Discord channel names to ignore when reacting to triggers. |
-|                        | `include`       | Empty list                       | No       | A list of Discord channels to specifically respond to triggers within. If specified, all other channels are ignored. |
-| `reactions`            | `success`       | See below.                       | No       | The emoji to react to a successful nomination with.          |
-|                        | `repeat`        | See below.                       | No       | The emoji to react to a nomination that has already been nominated with. |
-|                        | `skynet`        | See below.                       | No       | The emoji to react to a nomination of a MottoBotto message with. |
-|                        | `fishing`       | See below.                       | No       | The emoji to react to a nomination of the user's own message with. |
-|                        | `invalid`       | See below.                       | No       | The emoji to react to invalid nominations with.              |
-|                        | `invalid_emoji` | See below.                       | No       | The emoji to react to invalid emoji updates with.            |
-|                        | `valid_emoji`   | See below.                       | No       | The emoji to react to successful emoji updates with.         |
-| `should_reply`         | N/A             | `true`                           | No       | Whether to send message replies in response to nominations or not. If `false`, the only notifications users will receive are emoji reactions on their nomination message. |
-| `rules`                | `matching`      | `^.{5,240}$`<br />`^(\S+\s+)\S+` | No       | A list of regular expressions to match against the nominated motto text that must all match for the motto to be accepted. The message is first stripped of leading and trailing whitespace before matching. * |
-|                        | `excluding`     | `<@.*>`<br />`^[\d\W\s]*$`       | No       | A list of regular expressions to match against the nominated motto text, where any successful match will result in an invalid motto response. The message is first stripped of leading and trailing whitespace before matching. * |
-| `triggers`             | `new_motto`     | `!motto$`                        | No       | A list of regular expressions to match against every incoming message in the relevant channels (see `channels` above) to recognise a new nomination. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
-|                        | `change_emoji`  | `!emoji`                         | No       | A list of regular expressions to match against every incoming direct message to recognise a request to change the user's emoji. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
-| `approval_reaction`    | N/A             | `mottoapproval`                  | No       | The name of the custom emoji used to approve the addition of one of your mottos. |
-| `approval_opt_in_role` | N/A             | `Motto Opt In`                   | No       | The name of the role for a user to join to auto-approval all motto suggestions. |
-| `leaderboard_link`     | N/A             | `None`                           | No       | A link to the motto leaderboard. If not configured, the `!link` DM will not be recognised. |
+| Section                     | Key             | Default Value                    | Required | Description                                                  |
+| --------------------------- | --------------- | -------------------------------- | -------- | ------------------------------------------------------------ |
+| `authentication`            | `discord`       | Empty string                     | Yes      | MottoBotto's DIscord bot token.                              |
+|                             | `airtable_key`  | Empty string                     | Yes      | The API key for access to Airtable's API.                    |
+|                             | `airtable_base` | Empty string                     | Yes      | The ID of the Airtable base to store the mottos.             |
+| `channels`                  | `exclude`       | Empty list                       | No       | A list of Discord channel names to ignore when reacting to triggers. |
+|                             | `include`       | Empty list                       | No       | A list of Discord channels to specifically respond to triggers within. If specified, all other channels are ignored. |
+| `reactions`                 | `success`       | See below.                       | No       | The emoji to react to a successful nomination with.          |
+|                             | `repeat`        | See below.                       | No       | The emoji to react to a nomination that has already been nominated with. |
+|                             | `skynet`        | See below.                       | No       | The emoji to react to a nomination of a MottoBotto message with. |
+|                             | `fishing`       | See below.                       | No       | The emoji to react to a nomination of the user's own message with. |
+|                             | `invalid`       | See below.                       | No       | The emoji to react to invalid nominations with.              |
+|                             | `invalid_emoji` | See below.                       | No       | The emoji to react to invalid emoji updates with.            |
+|                             | `valid_emoji`   | See below.                       | No       | The emoji to react to successful emoji updates with.         |
+| `should_reply`              | N/A             | `true`                           | No       | Whether to send message replies in response to nominations or not. If `false`, the only notifications users will receive are emoji reactions on their nomination message. |
+| `rules`                     | `matching`      | `^.{5,240}$`<br />`^(\S+\s+)\S+` | No       | A list of regular expressions to match against the nominated motto text that must all match for the motto to be accepted. The message is first stripped of leading and trailing whitespace before matching. * |
+|                             | `excluding`     | `<@.*>`<br />`^[\d\W\s]*$`       | No       | A list of regular expressions to match against the nominated motto text, where any successful match will result in an invalid motto response. The message is first stripped of leading and trailing whitespace before matching. * |
+| `triggers`                  | `new_motto`     | `!motto$`                        | No       | A list of regular expressions to match against every incoming message in the relevant channels (see `channels` above) to recognise a new nomination. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
+|                             | `change_emoji`  | `!emoji`                         | No       | A list of regular expressions to match against every incoming direct message to recognise a request to change the user's emoji. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
+| `approval_reaction`         | N/A             | `mottoapproval`                  | No       | The name of the custom emoji used to approve the addition of one of your mottos. |
+| `approval_opt_in_role`      | N/A             | `Motto Opt In`                   | No       | The name of the role for a user to join to auto-approval all motto suggestions. |
+| `human_moderation_required` | N/A             | `false`                          | No       | Whether to set the "Approved" flag in Airtable by default or not. If `false`, all mottos added are automatically approved for moderation status. |
+| `leaderboard_link`          | N/A             | `None`                           | No       | A link to the motto leaderboard. If not configured, the `!link` DM will not be recognised. |
 
 \*Note: Regular expressions used for motto nomination rule matching are matched with case sensitivity, and must include the `^` and `$` if you wish to match against the entire message string. Those used for trigger phrases are matched without regard for case.
 
