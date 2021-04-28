@@ -14,7 +14,7 @@
         "repeat": "♻️",
         "unknown": "❓",
         "skynet": "❌",
-        "fishing": "🎣"
+        "fishing": "❌"
     },
     "triggers": {
         "new_motto": [
