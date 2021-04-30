@@ -2,13 +2,13 @@ import logging
 
 from discord import Message, Member
 
-import MottoBotto
+# import MottoBotto
 
 log = logging.getLogger("MottoBotto").getChild("reactions")
 log.setLevel(logging.DEBUG)
 
 
-async def skynet_prevention(botto: MottoBotto, message: Message):
+async def skynet_prevention(botto, message: Message):
     log.info(f"{message.author} attempted to activate Skynet!")
     await message.add_reaction(botto.config["reactions"]["reject"])
     await message.add_reaction(botto.config["reactions"]["skynet"])
@@ -16,7 +16,7 @@ async def skynet_prevention(botto: MottoBotto, message: Message):
         await message.reply("Skynet prevention")
 
 
-async def not_reply(botto: MottoBotto, message: Message):
+async def not_reply(botto, message: Message):
     log.info(
         f"Suggestion from {message.author} was not a reply (Message ID {message.id})"
     )
@@ -25,25 +25,25 @@ async def not_reply(botto: MottoBotto, message: Message):
         await message.reply("I see no motto!")
 
 
-async def fishing(botto: MottoBotto, message: Message):
+async def fishing(botto, message: Message):
     log.info(f"Motto fishing from: {message.author}")
     await message.add_reaction(botto.config["reactions"]["reject"])
     await message.add_reaction(botto.config["reactions"]["fishing"])
 
 
-async def invalid(botto: MottoBotto, message: Message):
+async def invalid(botto, message: Message):
     log.info(f"Motto from {message.author} is invalid according to rules.")
     await message.add_reaction(botto.config["reactions"]["reject"])
     await message.add_reaction(botto.config["reactions"]["invalid"])
 
 
-async def duplicate(botto: MottoBotto, message: Message):
+async def duplicate(botto, message: Message):
     log.debug("Ignoring motto, it's a duplicate.")
     await message.add_reaction(botto.config["reactions"]["repeat"])
     await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
 
 
-async def stored(botto: MottoBotto, message: Message, motto_message: Message):
+async def stored(botto, message: Message, motto_message: Message):
     await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
     await message.add_reaction(botto.config["reactions"]["success"])
     log.debug("Reaction added")
@@ -52,21 +52,21 @@ async def stored(botto: MottoBotto, message: Message, motto_message: Message):
     log.debug("Reply sent")
 
 
-async def pending(botto: MottoBotto, message: Message, motto_message: Message):
+async def pending(botto, message: Message, motto_message: Message):
     await message.add_reaction(botto.config["reactions"]["pending"])
     log.debug("Reaction added")
 
 
-async def invalid_emoji(botto: MottoBotto, message: Message):
+async def invalid_emoji(botto, message: Message):
     log.info(f"Invalid emoji requested from {message.author}")
     await message.add_reaction(botto.config["reactions"]["invalid_emoji"])
 
 
-async def valid_emoji(botto: MottoBotto, message: Message):
+async def valid_emoji(botto, message: Message):
     log.info(f"Valid emoji requested from {message.author}")
     await message.add_reaction(botto.config["reactions"]["valid_emoji"])
 
 
-async def unknown_dm(botto: MottoBotto, message: Message):
+async def unknown_dm(botto, message: Message):
     log.info(f"I don't know how to handle {message.content} from {message.author}")
     await message.add_reaction(botto.config["reactions"]["unknown"])

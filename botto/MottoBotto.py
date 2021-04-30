@@ -10,8 +10,8 @@ import discord
 from airtable import Airtable
 from discord import Message, Member
 
-import reactions
-from message_checks import is_botto, is_dm
+import botto.reactions
+from botto.message_checks import is_botto, is_dm
 
 log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)

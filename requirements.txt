@@ -1,3 +1,6 @@
 discord.py<1.8
 airtable-python-wrapper<0.16
 emoji==1.2.0
+pytest
+asynctest
+pytest-asyncio
