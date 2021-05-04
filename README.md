@@ -5,7 +5,7 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 
 * Nominate somebody else's message as a potential motto with `@MottoBotto` in a reply to the message.
 
-* Approve somebody's nomination of your message with an emoji reaction or by joining an auto-approval role.
+* Approve somebody's nomination of your message with an emoji reaction.
 * View the [list of approved mottos and the leaderboard](https://mottobotto.com/).
 * Change your leaderboard emoji with a direct message to MottoBotto of `!emoji <new-emoji>`.
 * Get a link to the leaderboard with a direct message to MottoBotto of `!link`.
@@ -16,7 +16,7 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 ## Interacting with MottoBotto
 
 
-To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted pending author approval, auto-accepted, rejected, invalid, or previously nominated. Mottos must be manually approved by moderators, and will then be available for display, along with a leaderboard for motto-makers, in [a simple web view](https://mottobotto.com/).
+To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted pending author approval, rejected, invalid, or previously nominated. Mottos must be manually approved by moderators, and will then be available for display, along with a leaderboard for motto-makers, in [a simple web view](https://mottobotto.com/).
 
 
 ### Rules MottoBotto follows when accepting mottos
@@ -45,8 +45,6 @@ MottoBotto will also reject any nomination that is a statement made by either yo
 2. MottoBotto will respond to your nomination message with a "pending" emoji.
 3. The author of the motto you nominated responds to your nomination message with an approval emoji.
 4. MottoBotto will store the nominated motto in the leaderboard, and convert its "pending" emoji to a "success" emoji.
-
-If you are happy for any message you send to be added to the leaderboard without your explicit approval, you may join the auto-approval role. In that situation, steps 2 and 3 above will be skipped.
 
 ### Adding or changing your emoji on the leaderboard
 
@@ -91,7 +89,6 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 |                             | `excluding`     | `<@.*>`<br />`^[\d\W\s]*$`       | No       | A list of regular expressions to match against the nominated motto text, where any successful match will result in an invalid motto response. The message is first stripped of leading and trailing whitespace before matching. * |
 | `triggers`                  | `new_motto`     | `!motto$`                        | No       | A list of regular expressions to match against every incoming message in the relevant channels (see `channels` above) to recognise a new nomination. They are all prepended with `^` before matching, to ensure they match the start of the message. The message is first stripped of leading and trailing whitespace before matching. * |
 | `approval_reaction`         | N/A             | `mottoapproval`                  | No       | The name of the custom emoji used to approve the addition of one of your mottos. |
-| `approval_opt_in_role`      | N/A             | `Motto Opt In`                   | No       | The name of the role for a user to join to auto-approval all motto suggestions. |
 | `human_moderation_required` | N/A             | `false`                          | No       | Whether to set the "Approved" flag in Airtable by default or not. If `false`, all mottos added are automatically approved for moderation status. |
 | `leaderboard_link`          | N/A             | `None`                           | No       | A link to the motto leaderboard. If not configured, the `!link` DM will not be recognised. |
 | `trigger_on_mention`            | N/A             | `true`                           | No       | Whether a message that starts with an `@` mention of MottoBotto triggers a nomination. If this is `false`, then at least one `new_motto` trigger must be configured. |
