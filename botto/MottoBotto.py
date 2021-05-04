@@ -48,7 +48,8 @@ class MottoBotto(discord.Client):
         log.info("We have logged in as {0.user}".format(self))
         await self.change_presence(
             activity=discord.Activity(
-                type=discord.ActivityType.watching, name=self.config["watching_status"],
+                type=discord.ActivityType.watching,
+                name=self.config["watching_status"],
             )
         )
 
@@ -189,7 +190,7 @@ class MottoBotto(discord.Client):
 
         return actual_motto
 
-    def is_repeat_message(self, message: Message, check_id=True) -> str:
+    def is_repeat_message(self, message: Message, check_id=True) -> bool:
         filter_motto = self.clean_message(message).replace("'", r"\'")
         filter_formula = f"REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', ''), '\s+', ' ') = REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', ''), '\s+', ' ')"
         if check_id:
@@ -318,34 +319,54 @@ class MottoBotto(discord.Client):
             return
 
         # Find the nominee and nominator
-        nominee = await self.get_or_add_member(motto_message.author)
-        nominator = await self.get_or_add_member(message.author)
+        try:
+            nominee = await self.get_or_add_member(motto_message.author)
+            nominator = await self.get_or_add_member(message.author)
+            log.info(
+                "Fetched/added nominee '{nominee}' and nominator '{nominator}'".format(
+                    nominee=nominee["Username"], nominator=nominator["Username"]
+                )
+            )
 
-        auto_approve = any(
-            r.name.strip("'") == self.config["approval_opt_in_role"]
-            for r in motto_message.author.roles
-        )
+            auto_approve = any(
+                r.name.strip("'") == self.config["approval_opt_in_role"]
+                for r in motto_message.author.roles
+            )
+            if auto_approve:
+                log.info(
+                    "{nominee} has opted-in to auto-approval".format(
+                        nominee=nominee["Username"]
+                    )
+                )
 
-        motto_data = {
-            "Motto": actual_motto if auto_approve else "",
-            "Message ID": str(motto_message.id),
-            "Date": motto_message.created_at.isoformat(),
-            "Member": [nominee["id"]],
-            "Nominated By": [nominator["id"]],
-            "Approved": not self.config["human_moderation_required"],
-            "Bot ID": self.config["id"] or "",
-        }
+            motto_data = {
+                "Motto": actual_motto if auto_approve else "",
+                "Message ID": str(motto_message.id),
+                "Date": motto_message.created_at.isoformat(),
+                "Member": [nominee["id"]],
+                "Nominated By": [nominator["id"]],
+                "Approved": not self.config["human_moderation_required"],
+                "Bot ID": self.config["id"] or "",
+            }
 
-        self.mottos.insert(motto_data)
-        log.debug("Added Motto to AirTable")
+            self.mottos.insert(motto_data)
+            log.info(
+                "Added Motto from message ID {id} to AirTable".format(
+                    id=motto_data["Message ID"]
+                )
+            )
 
-        if auto_approve:
-            await reactions.stored(self, message, motto_message)
-        else:
-            await reactions.pending(self, message, motto_message)
+            if auto_approve:
+                await reactions.stored(self, message, motto_message)
+            else:
+                await reactions.pending(self, message, motto_message)
 
-        await self.update_name(nominee, motto_message.author)
-        await self.update_name(nominator, message.author)
+            await self.update_name(nominee, motto_message.author)
+            await self.update_name(nominator, message.author)
+            log.debug("Updated names in airtable")
+        except Exception as e:
+            log.error("Failed to process suggestion", exc_info=True)
+            raise e
 
     async def process_dm(self, message: Message):
 
