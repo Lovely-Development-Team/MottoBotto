@@ -29,7 +29,7 @@
     fetch("README.md").then(function(response) {
       response.text().then(function(text) {
 
-        var converter = new showdown.Converter({"tables": true}),
+        var converter = new showdown.Converter({"tables": true, "ghCompatibleHeaderId": true}),
             html      = converter.makeHtml(text);
 
         document.getElementById("content").innerHTML = html;
