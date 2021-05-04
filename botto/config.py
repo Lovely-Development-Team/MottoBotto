@@ -50,6 +50,7 @@ def parse(config):
         "trigger_on_mention": True,
         "confirm_delete_reaction": "🧨",
         "support_channel": None,
+        "watching_status": "for inspiration",
     }
 
     for key in defaults.keys():
