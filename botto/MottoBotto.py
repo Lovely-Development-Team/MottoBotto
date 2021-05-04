@@ -357,8 +357,8 @@ class MottoBotto(discord.Client):
                 if self.config["trigger_on_mention"]
                 else "a trigger word"
             )
-            await message.author.dm_channel.send(
-                f"""
+
+            help_message = f"""
 Reply to a great motto in the supported channels with {trigger} to tell me about it! (Note: you can't nominate yourself.)
 `!link`: Get a link to the leaderboard.
 `!emoji <emoji>`: Set your emoji on the leaderboard. A response of {self.config["reactions"]["invalid_emoji"]} means the emoji you requested is not valid.
@@ -367,14 +367,31 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
 `!nick off`: Use your Discord username on the leaderboard instead of your server-specific nickname.
 `!delete`: Remove all your data from the leaderboard. Confirmation is required.
 """.strip()
-            )
+
+            help_channel = self.config["support_channel"]
+            users = ", ".join(f"<@{uid}>" for uid in self.config["support_users"].values())
+
+            if help_channel or users:
+                message_add = "If your question was not answered here, please"
+                if help_channel:
+                    message_add = f"{message_add} ask for help in #{help_channel}"
+                    if users:
+                        message_add = f"{message_add}, or"
+                if users:
+                    message_add = f"{message_add} DM one of the following users: {users}"
+                help_message = f"{help_message}\n{message_add}."
+
+            await message.author.dm_channel.send(help_message)
             return
 
         if message_content == "!version":
             git_version = subprocess.check_output(["git", "describe", "--tags"]).decode(
                 "utf-8"
-            )
-            await message.author.dm_channel.send(f"Version: {git_version}")
+            ).strip()
+            response = f"Version: {git_version}"
+            if bot_id := self.config["id"]:
+                response = f"{response} ({bot_id})"
+            await message.author.dm_channel.send(response)
             return
 
         if message_content == "!link" and self.config["leaderboard_link"] != None:
