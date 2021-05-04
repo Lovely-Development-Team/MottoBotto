@@ -82,6 +82,7 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 |                             | `invalid_emoji` | See below.                       | No       | The emoji to react to invalid emoji updates with.            |
 |                             | `valid_emoji`   | See below.                       | No       | The emoji to react to successful emoji updates with.         |
 | | `pending` | See below. | No | The emoji to react to nominations that have not yet been approved by the nominee. |
+| | `deleted` | See below. | No | The emoji to react nomination approvals where the nominated message has since been deleted. |
 | | `reject` | See below. | No | The emoji to react to any rejected nomination with. |
 | | `delete_confirmed` | See below. | No | The emoji to react with once the user's data has all been deleted after a `!delete` command. |
 | `should_reply`              | N/A             | `true`                           | No       | Whether to send message replies in response to nominations or not. If `false`, the only notifications users will receive are emoji reactions on their nomination message. |
@@ -163,6 +164,7 @@ MottoBotto will always react with emoji, but can also be configured to react wit
   * 👽 not allowing itself to be nominated (i.e. the nominated message was written by MottoBotto): "Skynet prevention"
   * 🎣 rejecting the motto for motto-fishing (i.e. the motto was written by the nominator): "Motto self-suggestions are forbidden"
   * 🙅 rejecting the motto for violating at least one rule (e.g. the motto is shorter than two words, the motto @-mentions another user, etc.) There is currently no corresponding text reply for this situation.
+  * 🗑 not able to add the approved motto, as the message has since been deleted. There is currently no corresponding text reply for this situation.
 
 #### Change Emoji
 

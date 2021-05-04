@@ -33,6 +33,7 @@ def parse(config):
             "fishing": "🎣",
             "invalid": "🙅",
             "pending": "⏳",
+            "deleted": "🗑",
             "invalid_emoji": "⚠️",
             "valid_emoji": "✅",
             "reject": "❌",
