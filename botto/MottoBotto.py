@@ -39,7 +39,7 @@ class MottoBotto(discord.Client):
         log.info("Responding to phrases: %s", self.config["triggers"])
         log.info("Rules: %s", self.config["rules"])
 
-        intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
+        intents = discord.Intents(messages=True, guilds=True, reactions=True)
         super().__init__(intents=intents)
 
     async def on_ready(self):
@@ -327,19 +327,8 @@ class MottoBotto(discord.Client):
                 )
             )
 
-            auto_approve = any(
-                r.name.strip("'") == self.config["approval_opt_in_role"]
-                for r in getattr(motto_message.author, "roles", [])
-            )
-            if auto_approve:
-                log.info(
-                    "{nominee} has opted-in to auto-approval".format(
-                        nominee=nominee["fields"]["Username"]
-                    )
-                )
-
             motto_data = {
-                "Motto": actual_motto if auto_approve else "",
+                "Motto": "",
                 "Message ID": str(motto_message.id),
                 "Date": motto_message.created_at.isoformat(),
                 "Member": [nominee["id"]],
@@ -355,10 +344,7 @@ class MottoBotto(discord.Client):
                 )
             )
 
-            if auto_approve:
-                await reactions.stored(self, message, motto_message)
-            else:
-                await reactions.pending(self, message, motto_message)
+            await reactions.pending(self, message, motto_message)
 
             await self.update_name(nominee, motto_message.author)
             await self.update_name(nominator, message.author)
