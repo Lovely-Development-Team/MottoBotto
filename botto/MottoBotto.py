@@ -39,9 +39,7 @@ class MottoBotto(discord.Client):
         log.info("Responding to phrases: %s", self.config["triggers"])
         log.info("Rules: %s", self.config["rules"])
 
-        intents = discord.Intents(
-            messages=True, guilds=True, reactions=True
-        )
+        intents = discord.Intents(messages=True, guilds=True, reactions=True)
         super().__init__(intents=intents)
 
     async def on_ready(self):
@@ -324,7 +322,8 @@ class MottoBotto(discord.Client):
             nominator = await self.get_or_add_member(message.author)
             log.info(
                 "Fetched/added nominee '{nominee}' and nominator '{nominator}'".format(
-                    nominee=nominee["Username"], nominator=nominator["Username"]
+                    nominee=nominee["fields"]["Username"],
+                    nominator=nominator["fields"]["Username"],
                 )
             )
 
@@ -335,7 +334,7 @@ class MottoBotto(discord.Client):
             if auto_approve:
                 log.info(
                     "{nominee} has opted-in to auto-approval".format(
-                        nominee=nominee["Username"]
+                        nominee=nominee["fields"]["Username"]
                     )
                 )
 
