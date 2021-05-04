@@ -69,6 +69,7 @@ class MottoBotto(discord.Client):
             return
 
         log.info(f"Reaction received: {payload}")
+        reactor = payload.member
 
         channel = await self.fetch_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
@@ -109,9 +110,9 @@ class MottoBotto(discord.Client):
             )
             await reactions.stored(self, message, motto_message)
 
-            nominee = await self.get_or_add_member(motto_message.author)
+            nominee = await self.get_or_add_member(reactor)
             nominator = await self.get_or_add_member(message.author)
-            await self.update_name(nominee, motto_message.author)
+            await self.update_name(nominee, reactor)
             await self.update_name(nominator, message.author)
 
             return
@@ -248,7 +249,7 @@ class MottoBotto(discord.Client):
             airtable_nickname = member_record["fields"].get("Nickname")
             discord_nickname = self.get_name(member)
 
-            if airtable_nickname != discord_nickname:
+            if airtable_nickname != discord_nickname and discord_nickname != member_record["fields"].get("Username"):
                 update_dict["Nickname"] = discord_nickname
         elif member_record["fields"].get("Nickname"):
             update_dict["Nickname"] = ""
