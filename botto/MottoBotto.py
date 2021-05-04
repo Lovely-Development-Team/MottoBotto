@@ -376,10 +376,12 @@ class MottoBotto(discord.Client):
 
             help_message = f"""
 Reply to a great motto in the supported channels with {trigger} to tell me about it! (Note: you can't nominate yourself.)
+
+You can DM me the following commands:
 `!link`: Get a link to the leaderboard.
 `!emoji <emoji>`: Set your emoji on the leaderboard. A response of {self.config["reactions"]["invalid_emoji"]} means the emoji you requested is not valid.
 `!emoji`: Clear your emoji from the leaderboard.
-`!nick on`: Use your server-specific nickname on the leaderboard instead of your Discord username.
+`!nick on`: Use your server-specific nickname on the leaderboard instead of your Discord username. Nickname changes will auto-update the next time you approve a motto.
 `!nick off`: Use your Discord username on the leaderboard instead of your server-specific nickname.
 `!delete`: Remove all your data from MottoBotto. Confirmation is required.
 """.strip()
@@ -390,13 +392,13 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
             )
 
             if help_channel or users:
-                message_add = "If your question was not answered here, please"
+                message_add = "\nIf your question was not answered here, please"
                 if help_channel:
                     message_add = f"{message_add} ask for help in #{help_channel}"
                     if users:
                         message_add = f"{message_add}, or"
                 if users:
-                    message_add = f"{message_add} DM one of the following users: {users}.\nThey are happy to receive your DMs about MottoBotto without prior permission but otherwise usual rules apply"
+                    message_add = f"{message_add} DM one of the following users: {users}. They are happy to receive your DMs about MottoBotto without prior permission but otherwise usual rules apply"
                 help_message = f"{help_message}\n{message_add}."
 
             await message.author.dm_channel.send(help_message)
