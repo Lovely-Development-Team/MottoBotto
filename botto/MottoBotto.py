@@ -382,7 +382,7 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
 `!emoji`: Clear your emoji from the leaderboard.
 `!nick on`: Use your server-specific nickname on the leaderboard instead of your Discord username.
 `!nick off`: Use your Discord username on the leaderboard instead of your server-specific nickname.
-`!delete`: Remove all your data from the leaderboard. Confirmation is required.
+`!delete`: Remove all your data from MottoBotto. Confirmation is required.
 """.strip()
 
             help_channel = self.config["support_channel"]
