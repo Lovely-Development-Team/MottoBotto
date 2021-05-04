@@ -50,7 +50,6 @@ def parse(config):
         "trigger_on_mention": True,
         "confirm_delete_reaction": "🧨",
         "support_channel": None,
-        "support_users": {},
     }
 
     for key in defaults.keys():
