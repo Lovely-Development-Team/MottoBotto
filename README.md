@@ -96,6 +96,7 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 | `confirm_delete_reaction` | N/A | 🧨 | No | The emoji the user is required to respond with to confirm deletion of all their data. |
 | `support_channel` | N/A | `None` | No | The name of a channel in which users of the bot can ask for help. If defined, this is reported in the output of `!help`. |
 | `id` | N/A | `None` | No | A unique ID for this bot, used for development when multiple bots may be running. This is reported by `!version`. |
+| `watching_status` | N/A | `"for inspiration"` | No | A status string to display after the bot's name. It is prepended with "Watching…" |
 
 \*Note: Regular expressions used for motto nomination rule matching are matched with case sensitivity, and must include the `^` and `$` if you wish to match against the entire message string. Those used for trigger phrases are matched without regard for case.
 

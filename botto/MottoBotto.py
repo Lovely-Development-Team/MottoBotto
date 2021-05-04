@@ -46,6 +46,11 @@ class MottoBotto(discord.Client):
 
     async def on_ready(self):
         log.info("We have logged in as {0.user}".format(self))
+        await self.change_presence(
+            activity=discord.Activity(
+                type=discord.ActivityType.watching, name=self.config["watching_status"],
+            )
+        )
 
     async def add_reaction(
         self, message: Message, reaction_type: str, default: str = None
@@ -371,7 +376,9 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
 """.strip()
 
             help_channel = self.config["support_channel"]
-            users = ", ".join(f"<@{user['Discord ID']}>" for user in self.get_support_users())
+            users = ", ".join(
+                f"<@{user['Discord ID']}>" for user in self.get_support_users()
+            )
 
             if help_channel or users:
                 message_add = "If your question was not answered here, please"
@@ -387,9 +394,11 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
             return
 
         if message_content == "!version":
-            git_version = subprocess.check_output(["git", "describe", "--tags"]).decode(
-                "utf-8"
-            ).strip()
+            git_version = (
+                subprocess.check_output(["git", "describe", "--tags"])
+                .decode("utf-8")
+                .strip()
+            )
             response = f"Version: {git_version}"
             if bot_id := self.config["id"]:
                 response = f"{response} ({bot_id})"
@@ -456,7 +465,12 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
         await reactions.unknown_dm(self, message)
 
     def get_support_users(self):
-        return [x["fields"] for x in self.members.get_all(sort=["Username"], filterByFormula="{Support}=TRUE()")]
+        return [
+            x["fields"]
+            for x in self.members.get_all(
+                sort=["Username"], filterByFormula="{Support}=TRUE()"
+            )
+        ]
 
     async def remove_unapproved_messages(self):
 
