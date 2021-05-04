@@ -19,7 +19,6 @@ def parse(config):
             "excluding": [
                 r"<@.*>",  # Contains an @username reference
                 r"^[\d\W\s]*$",  # Purely numeric or whitespace
-                r"<:.+:\d+>",  # Contains a server-specific emoji
             ],
         },
         "channels": {
