@@ -66,6 +66,7 @@ class MottoBotto(discord.Client):
             return
 
         log.info(f"Reaction received: {payload}")
+        reactor = payload.member
 
         channel = await self.fetch_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
@@ -106,9 +107,9 @@ class MottoBotto(discord.Client):
             )
             await reactions.stored(self, message, motto_message)
 
-            nominee = await self.get_or_add_member(motto_message.author)
+            nominee = await self.get_or_add_member(reactor)
             nominator = await self.get_or_add_member(message.author)
-            await self.update_name(nominee, motto_message.author)
+            await self.update_name(nominee, reactor)
             await self.update_name(nominator, message.author)
 
             return
