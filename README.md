@@ -94,6 +94,9 @@ MottoBotto requires a `config.json` configuration file, with the following secti
 | `trigger_on_mention`            | N/A             | `true`                           | No       | Whether a message that starts with an `@` mention of MottoBotto triggers a nomination. If this is `false`, then at least one `new_motto` trigger must be configured. |
 | `delete_unapproved_after_hours` | N/A             | `24`                             | No       | The number of hours before an unapproved motto suggestion is removed from Airtable. |
 | `confirm_delete_reaction` | N/A | 🧨 | No | The emoji the user is required to respond with to confirm deletion of all their data. |
+| `support_channel` | N/A | `None` | No | The name of a channel in which users of the bot can ask for help. If defined, this is reported in the output of `!help`. |
+| `support_users` | N/A | Empty dict | No | A dictionary containing name: Discord ID pairs of users who can be DMd for support with MottoBotto. If defined, this is reported in the output of `!help`. |
+| `id` | N/A | `None` | No | A unique ID for this bot, used for development when multiple bots may be running. This is reported by `!version`. |
 
 \*Note: Regular expressions used for motto nomination rule matching are matched with case sensitivity, and must include the `^` and `$` if you wish to match against the entire message string. Those used for trigger phrases are matched without regard for case.
 
@@ -128,12 +131,17 @@ The following is a full example `config.json`.
     "triggers": {
         "new_motto": [
             "!motto$",
-	    "Accurate[.,!] New motto\\?"
+            "Accurate[.,!] New motto\\?"
         ]
     },
     "should_reply": false,
     "approval_reaction": "mottoapproval",
-    "approval_opt_in_role": "Motto Opt In"
+    "approval_opt_in_role": "Motto Opt In",
+    "support_channel": "help",
+    "support_users1": {
+        "alice": "230968346794836789",
+        "bob": "3982390689364366"
+    }
 }
 ```
 

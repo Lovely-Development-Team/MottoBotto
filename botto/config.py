@@ -5,6 +5,7 @@ import os
 def parse(config):
 
     defaults = {
+        "id": None,
         "authentication": {
             "discord": "",
             "airtable_key": "",
@@ -48,6 +49,8 @@ def parse(config):
         "delete_unapproved_after_hours": 24,
         "trigger_on_mention": True,
         "confirm_delete_reaction": "🧨",
+        "support_channel": None,
+        "support_users": {},
     }
 
     for key in defaults.keys():
