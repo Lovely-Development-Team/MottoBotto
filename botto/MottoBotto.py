@@ -380,7 +380,7 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
                     if users:
                         message_add = f"{message_add}, or"
                 if users:
-                    message_add = f"{message_add} DM one of the following users: {users}.\nThey are happy to recieve your DMs about MottoBotto without prior permission but otherwise usual rules apply"
+                    message_add = f"{message_add} DM one of the following users: {users}.\nThey are happy to receive your DMs about MottoBotto without prior permission but otherwise usual rules apply"
                 help_message = f"{help_message}\n{message_add}."
 
             await message.author.dm_channel.send(help_message)
