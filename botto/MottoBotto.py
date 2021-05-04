@@ -40,7 +40,7 @@ class MottoBotto(discord.Client):
         log.info("Rules: %s", self.config["rules"])
 
         intents = discord.Intents(
-            messages=True, members=True, guilds=True, reactions=True
+            messages=True, guilds=True, reactions=True
         )
         super().__init__(intents=intents)
 
