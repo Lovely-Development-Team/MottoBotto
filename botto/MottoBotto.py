@@ -51,6 +51,9 @@ class MottoBotto(discord.Client):
             )
         )
 
+    async def on_disconnect(self):
+        log.warning("Bot disconnected")
+
     async def add_reaction(
         self, message: Message, reaction_type: str, default: str = None
     ):
