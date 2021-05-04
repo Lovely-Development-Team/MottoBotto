@@ -43,6 +43,13 @@ async def duplicate(botto: MottoBotto, message: Message):
     await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
 
 
+async def deleted(botto: MottoBotto, message: Message):
+    log.debug("Ignoring motto, it's been deleted.")
+    await message.add_reaction(botto.config["reactions"]["deleted"])
+    await message.add_reaction(botto.config["reactions"]["reject"])
+    await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
+
+
 async def stored(botto: MottoBotto, message: Message, motto_message: Message):
     await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
     await message.add_reaction(botto.config["reactions"]["success"])

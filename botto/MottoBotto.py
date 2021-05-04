@@ -8,7 +8,7 @@ import subprocess
 
 import discord
 from airtable import Airtable
-from discord import Message, Member
+from discord import Message, Member, DeletedReferencedMessage
 
 import reactions
 from message_checks import is_botto, is_dm
@@ -88,6 +88,12 @@ class MottoBotto(discord.Client):
                 return
 
             motto_message: Message = message.reference.resolved
+
+            if isinstance(motto_message, DeletedReferencedMessage):
+                log.info(f"Ignoring approval for a message that's been deleted.")
+                await reactions.deleted(self, message)
+                return
+
             log.info(f"Motto Message: {motto_message} / {motto_message.author.id}")
             if motto_message.author.id != payload.user_id:
                 log.info(f"Ignoring approval from somebody other than motto author.")
@@ -254,7 +260,10 @@ class MottoBotto(discord.Client):
             airtable_nickname = member_record["fields"].get("Nickname")
             discord_nickname = self.get_name(member)
 
-            if airtable_nickname != discord_nickname and discord_nickname != member_record["fields"].get("Username"):
+            if (
+                airtable_nickname != discord_nickname
+                and discord_nickname != member_record["fields"].get("Username")
+            ):
                 update_dict["Nickname"] = discord_nickname
         elif member_record["fields"].get("Nickname"):
             update_dict["Nickname"] = ""
