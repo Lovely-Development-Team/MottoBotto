@@ -215,6 +215,7 @@ class MottoBotto(discord.Client):
             data = {}
             data["Username"] = member.name
             data["Discord ID"] = str(member.id)
+            data["Bot ID"] = self.config["id"] or ""
             member_record = self.members.insert(data)
             log.debug(f"Added member {member_record} to AirTable")
         return member_record
@@ -327,6 +328,7 @@ class MottoBotto(discord.Client):
             "Member": [nominee["id"]],
             "Nominated By": [nominator["id"]],
             "Approved": not self.config["human_moderation_required"],
+            "Bot ID": self.config["id"] or "",
         }
 
         self.mottos.insert(motto_data)
@@ -378,7 +380,7 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
                     if users:
                         message_add = f"{message_add}, or"
                 if users:
-                    message_add = f"{message_add} DM one of the following users: {users}"
+                    message_add = f"{message_add} DM one of the following users: {users}. They are happy to recieve your DMs about MottoBotto without prior permission but otherwise usual rules apply."
                 help_message = f"{help_message}\n{message_add}."
 
             await message.author.dm_channel.send(help_message)
