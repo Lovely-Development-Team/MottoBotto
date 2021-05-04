@@ -4,8 +4,9 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 ## Default Usage TLDR
 
 * Nominate somebody else's message as a potential motto with `@MottoBotto` in a reply to the message.
-* Approve somebody's nomination of your message with an emoji reaction or a by joining an auto-approval role.
-* View the [list of approved mottos and the leaderboard](https://mottobotto.com).
+
+* Approve somebody's nomination of your message with an emoji reaction or by joining an auto-approval role.
+* View the [list of approved mottos and the leaderboard](https://mottobotto.com/).
 * Change your leaderboard emoji with a direct message to MottoBotto of `!emoji <new-emoji>`.
 * Get a link to the leaderboard with a direct message to MottoBotto of `!link`.
 * Delete all your data from the leaderboard with a direct message to MottoBotto of `!delete`.
@@ -14,7 +15,9 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 
 ## Interacting with MottoBotto
 
-To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted pending author approval, auto-accepted, rejected, invalid, or previously nominated. Mottos must be manually approved by moderators, and will then be available for display, along with a leaderboard for motto-makers, in [a simple web view](https://mottobotto.com).
+
+To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted pending author approval, auto-accepted, rejected, invalid, or previously nominated. Mottos must be manually approved by moderators, and will then be available for display, along with a leaderboard for motto-makers, in [a simple web view](https://mottobotto.com/).
+
 
 ### Rules MottoBotto follows when accepting mottos
 
