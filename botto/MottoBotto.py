@@ -246,7 +246,7 @@ class MottoBotto(discord.Client):
             airtable_nickname = member_record["fields"].get("Nickname")
             discord_nickname = self.get_name(member)
 
-            if airtable_nickname != discord_nickname:
+            if airtable_nickname != discord_nickname and discord_nickname != member_record["fields"].get("Username"):
                 update_dict["Nickname"] = discord_nickname
         elif member_record["fields"].get("Nickname"):
             update_dict["Nickname"] = ""
