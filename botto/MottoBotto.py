@@ -190,6 +190,11 @@ class MottoBotto(discord.Client):
                 continue
             actual_motto = actual_motto.replace(f"<#{channel_id}>", f"#{channel.name}")
 
+        server_emojis = {x.name: str(x) for x in message.guild.emojis}
+        for emoji in server_emojis:
+            if server_emojis[emoji] in actual_motto:
+                actual_motto = actual_motto.replace(server_emojis[emoji], f":{emoji}:")
+
         return actual_motto
 
     def is_repeat_message(self, message: Message, check_id=True) -> bool:
