@@ -2,15 +2,14 @@ import logging
 import random
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 from emoji import UNICODE_EMOJI
 import subprocess
 
 import discord
-from airtable import Airtable
-from discord import Message, Member, DeletedReferencedMessage
+from discord import Message, DeletedReferencedMessage
 
 import reactions
+from motto_storage import MottoStorage
 from message_checks import is_botto, is_dm
 
 log = logging.getLogger("MottoBotto")
@@ -21,15 +20,9 @@ CHANNEL_REGEX = re.compile("<#(\d+)>")
 
 
 class MottoBotto(discord.Client):
-    def __init__(
-        self,
-        config: dict,
-        mottos: Airtable,
-        members: Airtable,
-    ):
+    def __init__(self, config: dict, motto_storage: MottoStorage):
         self.config = config
-        self.mottos = mottos
-        self.members = members
+        self.storage = motto_storage
 
         log.info(
             "Replies are enabled"
@@ -99,7 +92,9 @@ class MottoBotto(discord.Client):
                 log.info(f"Ignoring approval from somebody other than motto author.")
                 return
 
-            motto_record = self.mottos.match("Message ID", str(motto_message.id))
+            motto_record = self.storage.mottos.match(
+                "Message ID", str(motto_message.id)
+            )
             if not motto_record:
                 log.info(f"Couldn't find matching message in Airtable.")
                 return
@@ -107,19 +102,19 @@ class MottoBotto(discord.Client):
             actual_motto = self.clean_message(motto_message)
 
             if self.is_repeat_message(motto_message, check_id=False):
-                self.mottos.delete(motto_record["id"])
+                self.storage.mottos.delete(motto_record["id"])
                 await reactions.duplicate(self, message)
                 return
 
-            self.mottos.update(
+            self.storage.mottos.update(
                 motto_record["id"], {"Motto": actual_motto, "Approved by Author": True}
             )
             await reactions.stored(self, message, motto_message)
 
-            nominee = await self.get_or_add_member(reactor)
-            nominator = await self.get_or_add_member(message.author)
-            await self.update_name(nominee, reactor)
-            await self.update_name(nominator, message.author)
+            nominee = await self.storage.get_or_add_member(reactor)
+            nominator = await self.storage.get_or_add_member(message.author)
+            await self.storage.update_name(nominee, reactor)
+            await self.storage.update_name(nominator, message.author)
 
             return
 
@@ -130,7 +125,7 @@ class MottoBotto(discord.Client):
                 return
 
             if not isinstance(channel, discord.DMChannel):
-                log.info(f"Ingoring reaction not in DM")
+                log.info(f"Ignoring reaction not in DM")
                 return
 
             request = message.reference.resolved if message.reference else None
@@ -146,22 +141,23 @@ class MottoBotto(discord.Client):
                 log.info(f"Ignoring message not pending approval.")
                 return
 
-            member_record = self.members.match("Discord ID", payload.user_id)
+            member_record = self.storage.members.match("Discord ID", payload.user_id)
             if member_record:
                 log.info(
                     f"Removing mottos by {member_record['fields']['Username']}: {member_record['fields']['Mottos']}"
                 )
-                self.mottos.batch_delete(member_record["fields"]["Mottos"])
+                self.storage.mottos.batch_delete(member_record["fields"]["Mottos"])
                 log.info(
                     f"Removing {member_record['fields']['Username']} ({member_record['id']}"
                 )
-                self.members.delete(member_record["id"])
+                self.storage.members.delete(member_record["id"])
             await message.remove_reaction(
                 self.config["reactions"]["pending"], self.user
             )
             await message.add_reaction(self.config["reactions"]["delete_confirmed"])
             await channel.send(
-                "All of your data has been removed. If you approve or nominate another motto in future, your user data and any future approved mottos will be captured again."
+                "All of your data has been removed. If you approve or nominate another motto in future, your user "
+                "data and any future approved mottos will be captured again. "
             )
             return
 
@@ -211,7 +207,7 @@ class MottoBotto(discord.Client):
                 f"OR({filter_formula}, '{str(message.id)}' = {{Message ID}})"
             )
         log.debug("Searching with filter %r", filter_formula)
-        matching_mottos = self.mottos.get_all(filterByFormula=filter_formula)
+        matching_mottos = self.storage.mottos.get_all(filterByFormula=filter_formula)
         return bool(matching_mottos)
 
     def is_valid_message(self, message: Message) -> bool:
@@ -224,80 +220,6 @@ class MottoBotto(discord.Client):
         ):
             return False
         return True
-
-    def get_name(self, member: Member):
-        return member.nick if getattr(member, "nick", None) else member.display_name
-
-    async def get_or_add_member(self, member: Member):
-        member_record = self.members.match("Discord ID", member.id)
-        if not member_record:
-            data = {}
-            data["Username"] = member.name
-            data["Discord ID"] = str(member.id)
-            data["Bot ID"] = self.config["id"] or ""
-            member_record = self.members.insert(data)
-            log.debug(f"Added member {member_record} to AirTable")
-        return member_record
-
-    async def set_nick_option(self, member: Member, on=False):
-        member_record = await self.get_or_add_member(member)
-        update = {
-            "Use Nickname": on,
-        }
-        if not on:
-            update["Nickname"] = None
-        log.debug(f"Recording changes for {member}: {update}")
-        self.members.update(member_record["id"], update)
-
-    async def update_name(self, member_record: dict, member: Member):
-        airtable_username = member_record["fields"].get("Username")
-        discord_username = member.name
-        update_dict = {}
-        if airtable_username != discord_username:
-            update_dict["Username"] = discord_username
-
-        if member_record["fields"].get("Use Nickname"):
-            airtable_nickname = member_record["fields"].get("Nickname")
-            discord_nickname = self.get_name(member)
-
-            if (
-                airtable_nickname != discord_nickname
-                and discord_nickname != member_record["fields"].get("Username")
-            ):
-                update_dict["Nickname"] = discord_nickname
-        elif member_record["fields"].get("Nickname"):
-            update_dict["Nickname"] = ""
-
-        if update_dict:
-            log.debug(f"Recorded changes {update_dict}")
-            self.members.update(member_record["id"], update_dict)
-
-    async def update_emoji(self, member_record: dict, emoji: str):
-        data = {"Emoji": emoji}
-
-        log.debug(f"Update data: {data}")
-        log.debug(f"Member record: {member_record}")
-
-        if member_record["fields"].get("Emoji") != data.get("Emoji"):
-            log.debug("Updating member emoji details")
-            self.members.update(member_record["id"], data)
-
-    def update_existing_member(self, member: Member) -> Optional[dict]:
-        """
-        Updates an existing member's record. This will not add new members
-        :param member: the updated member from Discord
-        :return: the member record if they exist, otherwise None
-        """
-        member_record = self.members.match("Discord ID", member.id)
-        if not member_record:
-            return None
-        if member_record["fields"].get("Name") == member.display_name:
-            return None
-        update_dict = {
-            "Name": member.display_name,
-        }
-        self.members.update(member_record["id"], update_dict)
-        return member_record
 
     async def process_suggestion(self, message: Message):
 
@@ -328,16 +250,14 @@ class MottoBotto(discord.Client):
 
         log.info(f'Motto suggestion incoming: "{motto_message.content}"')
 
-        actual_motto = self.clean_message(motto_message)
-
         if self.is_repeat_message(motto_message):
             await reactions.duplicate(self, message)
             return
 
         # Find the nominee and nominator
         try:
-            nominee = await self.get_or_add_member(motto_message.author)
-            nominator = await self.get_or_add_member(message.author)
+            nominee = await self.storage.get_or_add_member(motto_message.author)
+            nominator = await self.storage.get_or_add_member(message.author)
             log.info(
                 "Fetched/added nominee '{nominee}' and nominator '{nominator}'".format(
                     nominee=nominee["fields"]["Username"],
@@ -355,7 +275,7 @@ class MottoBotto(discord.Client):
                 "Bot ID": self.config["id"] or "",
             }
 
-            self.mottos.insert(motto_data)
+            self.storage.mottos.insert(motto_data)
             log.info(
                 "Added Motto from message ID {id} to AirTable".format(
                     id=motto_data["Message ID"]
@@ -364,8 +284,8 @@ class MottoBotto(discord.Client):
 
             await reactions.pending(self, message, motto_message)
 
-            await self.update_name(nominee, motto_message.author)
-            await self.update_name(nominator, message.author)
+            await self.storage.update_name(nominee, motto_message.author)
+            await self.storage.update_name(nominator, message.author)
             log.debug("Updated names in airtable")
         except Exception as e:
             log.error("Failed to process suggestion", exc_info=True)
@@ -403,7 +323,7 @@ You can DM me the following commands:
 
             help_channel = self.config["support_channel"]
             users = ", ".join(
-                f"<@{user['Discord ID']}>" for user in self.get_support_users()
+                f"<@{user['Discord ID']}>" for user in self.storage.get_support_users()
             )
 
             if help_channel or users:
@@ -431,7 +351,7 @@ You can DM me the following commands:
             await message.author.dm_channel.send(response)
             return
 
-        if message_content == "!link" and self.config["leaderboard_link"] != None:
+        if message_content == "!link" and self.config["leaderboard_link"] is not None:
             await message.author.dm_channel.send(self.config["leaderboard_link"])
             return
 
@@ -441,24 +361,29 @@ You can DM me the following commands:
             except ValueError:
                 option = None
             if option == "on":
-                await self.set_nick_option(message.author, on=True)
+                await self.storage.set_nick_option(message.author, on=True)
                 await message.author.dm_channel.send(
-                    "The leaderboard will now display your server-specific nickname instead of your Discord username. To return to your username, type `!nick off`."
+                    "The leaderboard will now display your server-specific nickname instead of your Discord username. "
+                    "To return to your username, type `!nick off`. "
                 )
             elif option == "off":
-                await self.set_nick_option(message.author, on=False)
+                await self.storage.set_nick_option(message.author, on=False)
                 await message.author.dm_channel.send(
-                    "The leaderboard will now display your Discord username instead of your server-specific nickname. To return to your nickname, type `!nick on`."
+                    "The leaderboard will now display your Discord username instead of your server-specific nickname. "
+                    "To return to your nickname, type `!nick on`. "
                 )
             else:
                 await message.author.dm_channel.send(
-                    "To display your server-specific nickname on the leaderboard, type `!nick on`. To use your Discord username, type `!nick off`."
+                    "To display your server-specific nickname on the leaderboard, type `!nick on`. To use your "
+                    "Discord username, type `!nick off`. "
                 )
             return
 
         if message_content == "!delete":
             sent_message = await message.reply(
-                f"Are you sure you want to delete all your data from the leaderboard? This will include any mottos of yours that were nominated by other people. If so, react to this message with {self.config['confirm_delete_reaction']}. Otherwise, ignore this message."
+                "Are you sure you want to delete all your data from the leaderboard? This will include any mottos of "
+                "yours that were nominated by other people. If so, react to this message with "
+                f"{self.config['confirm_delete_reaction']}. Otherwise, ignore this message. "
             )
             await sent_message.add_reaction(self.config["reactions"]["pending"])
             return
@@ -475,13 +400,13 @@ You can DM me the following commands:
 
             if not content:
                 log.debug(f"Removing emoji")
-                member = await self.get_or_add_member(message.author)
-                await self.update_emoji(member, emoji="")
+                member = await self.storage.get_or_add_member(message.author)
+                await self.storage.update_emoji(member, emoji="")
                 await reactions.valid_emoji(self, message)
             elif content in UNICODE_EMOJI["en"]:
                 log.debug(f"Updating emoji")
-                member = await self.get_or_add_member(message.author)
-                await self.update_emoji(member, emoji=content)
+                member = await self.storage.get_or_add_member(message.author)
+                await self.storage.update_emoji(member, emoji=content)
                 await reactions.valid_emoji(self, message)
             else:
                 await reactions.invalid_emoji(self, message)
@@ -490,19 +415,11 @@ You can DM me the following commands:
 
         await reactions.unknown_dm(self, message)
 
-    def get_support_users(self):
-        return [
-            x["fields"]
-            for x in self.members.get_all(
-                sort=["Username"], filterByFormula="{Support}=TRUE()"
-            )
-        ]
-
     async def remove_unapproved_messages(self):
 
         # Don't do this for every message
         if random.random() < 0.1:
-            for motto in self.mottos.search("Motto", ""):
+            for motto in self.storage.mottos.search("Motto", ""):
                 motto_date = datetime.strptime(
                     motto["fields"]["Date"], "%Y-%m-%dT%H:%M:%S.%f%z"
                 )
@@ -513,4 +430,4 @@ You can DM me the following commands:
                     log.debug(
                         f'Deleting motto {motto["id"]} - message ID {motto["fields"]["Message ID"]}'
                     )
-                    self.mottos.delete(motto["id"])
+                    self.storage.mottos.delete(motto["id"])
