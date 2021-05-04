@@ -10,6 +10,9 @@ from config import parse
 
 # Configure logging
 logging.config.fileConfig(fname="log.conf", disable_existing_loggers=False)
+logging.getLogger("discord").setLevel(logging.CRITICAL)
+logging.getLogger("asyncio").setLevel(logging.CRITICAL)
+logging.getLogger("urllib").setLevel(logging.CRITICAL)
 log = logging.getLogger("MottoBotto")
 
 try:
