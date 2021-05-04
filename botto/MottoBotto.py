@@ -369,7 +369,7 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
 """.strip()
 
             help_channel = self.config["support_channel"]
-            users = ", ".join(f"<@{uid}>" for uid in self.config["support_users"].values())
+            users = ", ".join(f"<@{user['Discord ID']}>" for user in self.get_support_users())
 
             if help_channel or users:
                 message_add = "If your question was not answered here, please"
@@ -452,6 +452,9 @@ Reply to a great motto in the supported channels with {trigger} to tell me about
             return
 
         await reactions.unknown_dm(self, message)
+
+    def get_support_users(self):
+        return [x["fields"] for x in self.members.get_all(sort=["Username"], filterByFormula="{Support}=TRUE()")]
 
     async def remove_unapproved_messages(self):
 
