@@ -6,6 +6,7 @@ import logging.config
 from airtable import Airtable
 
 from MottoBotto import MottoBotto
+from motto_storage import AirtableMottoStorage
 from config import parse
 
 # Configure logging
@@ -37,5 +38,7 @@ members = Airtable(
     config["authentication"]["airtable_key"],
 )
 
-client = MottoBotto(config, mottos, members)
+storage = AirtableMottoStorage(mottos, members, config["id"])
+
+client = MottoBotto(config, storage)
 client.run(config["authentication"]["discord"])
