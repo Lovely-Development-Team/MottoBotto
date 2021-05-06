@@ -351,9 +351,15 @@ You can DM me the following commands:
                 return
 
             leaders_message = ""
+            previous_count = None
+            previous_position = 1
             for position, leader in enumerate(leaders, 1):
+                pos = previous_position if previous_count == leader.motto_count else position
                 plural = "s" if leader.motto_count > 1 else ""
-                leaders_message = f"{leaders_message}:{NUMBERS[position]}: <@{leader.discord_id}> {leader.display_name} ({leader.motto_count} motto{plural})\n"
+                leaders_message = f"{leaders_message}:{NUMBERS[pos]}: <@{leader.discord_id}> {leader.display_name} ({leader.motto_count} motto{plural})\n"
+                if previous_count != leader.motto_count:
+                    previous_count = leader.motto_count
+                    previous_position = position
             await message.author.dm_channel.send(leaders_message)
             return
 
