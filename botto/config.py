@@ -37,6 +37,7 @@ def parse(config):
             "invalid_emoji": "⚠️",
             "valid_emoji": "✅",
             "reject": "❌",
+            "poke": "👈👆👇👉😢🤪😝",
             "delete_confirmed": "✅",
         },
         "triggers": {
