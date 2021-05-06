@@ -17,42 +17,81 @@ def get_name(member: DiscordMember):
 
 class MottoStorage:
     async def save_motto(self, motto: Motto, fields=None):
+        """
+        Save the provided Motto.
+        If it has no primary key, inserts a new instance, otherwise updates the old instance.
+        If a list of fields are specified, only saves/updates those fields.
+        """
         raise NotImplementedError
 
     async def get_matching_mottos(self, motto: str, message_id=None) -> list:
+        """
+        Return Mottos that are duplicates of the provided motto text.
+        If message_id is provided, that is also used in the uniqueness test.
+        """
         raise NotImplementedError
 
     async def get_motto(self, message_id: str) -> Optional[Motto]:
+        """
+        Return a Motto with the given Discord message_id.
+        """
         raise NotImplementedError
 
     async def get_random_motto(self) -> Optional[Motto]:
+        """
+        Return a random approved Motto.
+        """
         raise NotImplementedError
 
     async def delete_motto(self, pk: str):
+        """
+        Delete a Motto with the provided primary key.
+        """
         raise NotImplementedError
 
     async def get_or_add_member(self, member: DiscordMember) -> Member:
+        """
+        Get or add a Member object based on the provided Discord Member.
+        """
         raise NotImplementedError
 
     async def get_member(self, pk: str) -> Optional[Member]:
+        """
+        Return the Member with the specified primary key.
+        """
         raise NotImplementedError
 
     async def set_nick_option(self, member: DiscordMember, on=False):
+        """
+        Set the Member use_nickname option to either on or off for the provided Discord Member.
+        """
         raise NotImplementedError
 
     async def update_name(self, member_record: Member, member: DiscordMember):
+        """
+        Update the Member's name information from the provided Discord Member.
+        """
         raise NotImplementedError
 
     async def update_emoji(self, member_record: Member, emoji: str):
+        """
+        Update the Member's emoji.
+        """
         raise NotImplementedError
 
-    def get_support_users(self):
+    def get_support_users(self) -> list:
+        """
+        Return a list of support Members.
+        """
         raise NotImplementedError
 
     def get_leaders(self, count=10) -> list:
+        """
+        Return the Members with the top Motto counts.
+        """
         raise NotImplementedError
 
-    async def remove_unapproved_messages(self):
+    async def remove_unapproved_messages(self, safe_period=24):
         raise NotImplementedError
 
 
@@ -194,7 +233,7 @@ class AirtableMottoStorage(MottoStorage):
             log.debug("Updating member emoji details")
             self.members.update(member_record.primary_key, data)
 
-    def get_support_users(self):
+    def get_support_users(self) -> list:
         return [
             Member.from_airtable(x)
             for x in self.members.get_all(
