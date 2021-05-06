@@ -188,9 +188,8 @@ class MottoBotto(discord.Client):
             if channel_name in self.config["channels"]["exclude"]:
                 return
 
-        await self.remove_unapproved_messages()
-
         await self.process_suggestion(message)
+        await self.remove_unapproved_messages()
 
     def clean_message(self, message: Message) -> str:
 
@@ -228,11 +227,15 @@ class MottoBotto(discord.Client):
 
     async def process_suggestion(self, message: Message):
 
+        self_id = rf"<@!?{self.user.id}>"
+
         triggers = self.config["triggers"]["new_motto"]
         if self.config["trigger_on_mention"]:
-            triggers = [re.compile(rf"^<@!?\s?{self.user.id}>")] + triggers
+            triggers = [re.compile(rf"^{self_id}")] + triggers
 
         if not any(t.match(message.content) for t in triggers):
+            if re.search(rf"pokes? {self_id}", message.content):
+                await reactions.poke(self, message)
             return
 
         if is_botto(message, self.user):
