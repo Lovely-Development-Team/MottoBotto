@@ -1,0 +1,113 @@
+from dateutil import parser
+
+
+class Model:
+    def __init__(self, **kwargs):
+        for attr in self.attributes:
+            setattr(self, attr, kwargs.get(attr))
+
+    def __str__(self):
+        attrs = ", ".join(f"{attr}={getattr(self, attr)!r}" for attr in self.attributes)
+        return f"{self.__class__.__name__}({attrs})"
+
+
+class Motto(Model):
+    attributes = [
+        "primary_key",
+        "motto",
+        "message_id",
+        "date",
+        "member",
+        "nominated_by",
+        "approved_by_author",
+        "approved",
+        "bot_id",
+    ]
+
+    @classmethod
+    def from_airtable(cls, data: dict) -> "Motto":
+        fields = data["fields"]
+        try:
+            date = parser.parse(fields["Date"])
+        except parser.ParserError:
+            date = None
+        return cls(
+            primary_key=data["id"],
+            motto=fields.get("Motto"),
+            message_id=fields.get("Message ID"),
+            date=date,
+            member=fields.get("Member", [None])[0],
+            nominated_by=fields.get("Nominated By", [None])[0],
+            approved_by_author=fields.get("Approved by Author"),
+            approved=fields.get("Approved"),
+            bot_id=fields.get("Bot ID"),
+        )
+
+    def to_airtable(self, fields=None) -> dict:
+        fields = fields if fields else self.attributes
+        data = {}
+        if "motto" in fields:
+            data["Motto"] = self.motto
+        if "message_id" in fields:
+            data["Message ID"] = self.message_id
+        if "date" in fields:
+            data["Date"] = self.date.isoformat()
+        if "member" in fields:
+            data["Member"] = [
+                self.member.primary_key
+                if isinstance(self.member, Member)
+                else self.member
+            ]
+        if "nominated_by" in fields:
+            data["Nominated By"] = [
+                self.nominated_by.primary_key
+                if isinstance(self.nominated_by, Member)
+                else self.nominated_by
+            ]
+        if "approved_by_author" in fields:
+            data["Approved by Author"] = self.approved_by_author
+        if "approved" in fields:
+            data["Approved"] = self.approved
+        if "bot_id" in fields:
+            data["Bot ID"] = self.bot_id
+        return {
+            "id": self.primary_key,
+            "fields": data,
+        }
+
+
+class Member(Model):
+    attributes = [
+        "primary_key",
+        "username",
+        "emoji",
+        "discord_id",
+        "support",
+        "nickname",
+        "use_nickname",
+        "motto_count",
+        "bot_id",
+    ]
+
+    @classmethod
+    def from_airtable(cls, data: dict) -> "Member":
+        fields = data["fields"]
+        return cls(
+            primary_key=data["id"],
+            emoji=fields.get("Emoji"),
+            username=fields.get("Username"),
+            discord_id=fields.get("Discord ID"),
+            support=fields.get("Support", False),
+            nickname=fields.get("Nickname"),
+            use_nickname=fields.get("Use Nickname", False),
+            motto_count=fields.get("Motto Count", 0),
+            bot_id=fields.get("Bot ID", None),
+        )
+
+    @property
+    def display_name(self):
+        emoji = ""
+        if self.emoji:
+            emoji = f"{self.emoji} "
+        name = self.nickname if self.nickname and self.use_nickname else self.username
+        return f"{emoji}{name}"

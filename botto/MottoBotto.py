@@ -1,7 +1,6 @@
 import logging
 import random
 import re
-from datetime import datetime, timedelta, timezone
 from emoji import UNICODE_EMOJI
 import subprocess
 
@@ -9,18 +8,31 @@ import discord
 from discord import Message, DeletedReferencedMessage
 
 import reactions
-from motto_storage import MottoStorage
 from message_checks import is_botto, is_dm
+
+from models import Motto
 
 log = logging.getLogger("MottoBotto")
 log.setLevel(logging.DEBUG)
 
 
-CHANNEL_REGEX = re.compile("<#(\d+)>")
+CHANNEL_REGEX = re.compile(r"<#(\d+)>")
+NUMBERS = [
+    "zero",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+]
 
 
 class MottoBotto(discord.Client):
-    def __init__(self, config: dict, motto_storage: MottoStorage):
+    def __init__(self, config: dict, motto_storage):
         self.config = config
         self.storage = motto_storage
 
@@ -92,23 +104,21 @@ class MottoBotto(discord.Client):
                 log.info(f"Ignoring approval from somebody other than motto author.")
                 return
 
-            motto_record = self.storage.mottos.match(
-                "Message ID", str(motto_message.id)
-            )
-            if not motto_record:
-                log.info(f"Couldn't find matching message in Airtable.")
+            motto = await self.storage.get_motto(message_id=motto_message.id)
+            if not motto:
+                log.info(f"Couldn't find matching message.")
                 return
 
             actual_motto = self.clean_message(motto_message)
 
-            if self.is_repeat_message(motto_message, check_id=False):
-                self.storage.mottos.delete(motto_record["id"])
+            if await self.is_repeat_message(motto_message, check_id=False):
+                await self.storage.delete_motto(pk=motto.primary_key)
                 await reactions.duplicate(self, message)
                 return
 
-            self.storage.mottos.update(
-                motto_record["id"], {"Motto": actual_motto, "Approved by Author": True}
-            )
+            motto.motto = actual_motto
+            motto.approved_by_author = True
+            await self.storage.save_motto(motto, fields=["motto", "approved_by_author"])
             await reactions.stored(self, message, motto_message)
 
             nominee = await self.storage.get_or_add_member(reactor)
@@ -199,15 +209,10 @@ class MottoBotto(discord.Client):
 
         return actual_motto
 
-    def is_repeat_message(self, message: Message, check_id=True) -> bool:
-        filter_motto = self.clean_message(message).replace("'", r"\'")
-        filter_formula = f"REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', ''), '\s+', ' ') = REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', ''), '\s+', ' ')"
-        if check_id:
-            filter_formula = (
-                f"OR({filter_formula}, '{str(message.id)}' = {{Message ID}})"
-            )
-        log.debug("Searching with filter %r", filter_formula)
-        matching_mottos = self.storage.mottos.get_all(filterByFormula=filter_formula)
+    async def is_repeat_message(self, message: Message, check_id=True) -> bool:
+        matching_mottos = await self.storage.get_matching_mottos(
+            self.clean_message(message), message_id=message.id if check_id else None
+        )
         return bool(matching_mottos)
 
     def is_valid_message(self, message: Message) -> bool:
@@ -250,7 +255,7 @@ class MottoBotto(discord.Client):
 
         log.info(f'Motto suggestion incoming: "{motto_message.content}"')
 
-        if self.is_repeat_message(motto_message):
+        if await self.is_repeat_message(motto_message):
             await reactions.duplicate(self, message)
             return
 
@@ -259,28 +264,20 @@ class MottoBotto(discord.Client):
             nominee = await self.storage.get_or_add_member(motto_message.author)
             nominator = await self.storage.get_or_add_member(message.author)
             log.info(
-                "Fetched/added nominee '{nominee}' and nominator '{nominator}'".format(
-                    nominee=nominee["fields"]["Username"],
-                    nominator=nominator["fields"]["Username"],
-                )
+                f"Fetched/added nominee {nominee.username!r} and nominator {nominator.username!r}"
             )
 
-            motto_data = {
-                "Motto": "",
-                "Message ID": str(motto_message.id),
-                "Date": motto_message.created_at.isoformat(),
-                "Member": [nominee["id"]],
-                "Nominated By": [nominator["id"]],
-                "Approved": not self.config["human_moderation_required"],
-                "Bot ID": self.config["id"] or "",
-            }
-
-            self.storage.mottos.insert(motto_data)
-            log.info(
-                "Added Motto from message ID {id} to AirTable".format(
-                    id=motto_data["Message ID"]
-                )
+            motto = Motto(
+                motto="",
+                message_id=str(motto_message.id),
+                date=motto_message.created_at,
+                member=nominee,
+                nominated_by=nominator,
+                approved=not self.config["human_moderation_required"],
+                bot_id=self.config["id"],
             )
+            await self.storage.save_motto(motto)
+            log.info(f"Added Motto from message ID {motto.message_id} to AirTable")
 
             await reactions.pending(self, message, motto_message)
 
@@ -313,6 +310,8 @@ class MottoBotto(discord.Client):
 Reply to a great motto in the supported channels with {trigger} to tell me about it! (Note: you can't nominate yourself.)
 
 You can DM me the following commands:
+`!random`: Get a random motto.
+`!leaderboard`: Display the top motto authors.
 `!link`: Get a link to the leaderboard.
 `!emoji <emoji>`: Set your emoji on the leaderboard. A response of {self.config["reactions"]["invalid_emoji"]} means the emoji you requested is not valid.
 `!emoji`: Clear your emoji from the leaderboard.
@@ -323,7 +322,7 @@ You can DM me the following commands:
 
             help_channel = self.config["support_channel"]
             users = ", ".join(
-                f"<@{user['Discord ID']}>" for user in self.storage.get_support_users()
+                f"<@{user.discord_id}>" for user in self.storage.get_support_users()
             )
 
             if help_channel or users:
@@ -339,6 +338,22 @@ You can DM me the following commands:
             await message.author.dm_channel.send(help_message)
             return
 
+        if message_content == "!leaderboard":
+            leaders = self.storage.get_leaders(count=5)
+
+            if not leaders:
+                await message.author.dm_channel.send(
+                    "There does't appear to be anybody on the leaderboard!"
+                )
+                return
+
+            leaders_message = ""
+            for position, leader in enumerate(leaders, 1):
+                plural = "s" if leader.motto_count > 1 else ""
+                leaders_message = f"{leaders_message}:{NUMBERS[position]}: <@{leader.discord_id}> {leader.display_name} ({leader.motto_count} motto{plural})\n"
+            await message.author.dm_channel.send(leaders_message)
+            return
+
         if message_content == "!version":
             git_version = (
                 subprocess.check_output(["git", "describe", "--tags"])
@@ -349,6 +364,16 @@ You can DM me the following commands:
             if bot_id := self.config["id"]:
                 response = f"{response} ({bot_id})"
             await message.author.dm_channel.send(response)
+            return
+
+        if message_content in ("!hitmeup", "!random", "!inspireme"):
+            random_motto = await self.storage.get_random_motto()
+            if not random_motto:
+                await message.author.dm_channel.send("Sorry mate, I'm all out.")
+                return
+            await message.author.dm_channel.send(
+                f"{random_motto.motto}—{random_motto.member.display_name}"
+            )
             return
 
         if message_content == "!link" and self.config["leaderboard_link"] is not None:
@@ -416,18 +441,8 @@ You can DM me the following commands:
         await reactions.unknown_dm(self, message)
 
     async def remove_unapproved_messages(self):
-
         # Don't do this for every message
         if random.random() < 0.1:
-            for motto in self.storage.mottos.search("Motto", ""):
-                motto_date = datetime.strptime(
-                    motto["fields"]["Date"], "%Y-%m-%dT%H:%M:%S.%f%z"
-                )
-                motto_expiry_date = datetime.now(timezone.utc) - timedelta(
-                    hours=self.config["delete_unapproved_after_hours"]
-                )
-                if motto_date < motto_expiry_date:
-                    log.debug(
-                        f'Deleting motto {motto["id"]} - message ID {motto["fields"]["Message ID"]}'
-                    )
-                    self.storage.mottos.delete(motto["id"])
+            await self.storage.remove_unapproved_messages(
+                self.config["delete_unapproved_after_hours"]
+            )
