@@ -1,4 +1,5 @@
 import logging
+import random
 
 from discord import Message, Member
 
@@ -14,6 +15,11 @@ async def skynet_prevention(botto: MottoBotto, message: Message):
     await message.add_reaction(botto.config["reactions"]["skynet"])
     if botto.config["should_reply"]:
         await message.reply("Skynet prevention")
+
+
+async def poke(botto: MottoBotto, message: Message):
+    log.info(f"Poke from: {message.author}")
+    await message.add_reaction(random.choice(botto.config["reactions"]["poke"]))
 
 
 async def not_reply(botto: MottoBotto, message: Message):
