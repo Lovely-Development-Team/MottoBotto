@@ -22,6 +22,11 @@ async def poke(botto: MottoBotto, message: Message):
     await message.add_reaction(random.choice(botto.config["reactions"]["poke"]))
 
 
+async def love(botto: MottoBotto, message: Message):
+    log.info(f"Apology from: {message.author}")
+    await message.add_reaction(random.choice(botto.config["reactions"]["love"]))
+
+
 async def not_reply(botto: MottoBotto, message: Message):
     log.info(
         f"Suggestion from {message.author} was not a reply (Message ID {message.id})"

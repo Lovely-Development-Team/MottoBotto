@@ -234,8 +234,10 @@ class MottoBotto(discord.Client):
             triggers = [re.compile(rf"^{self_id}")] + triggers
 
         if not any(t.match(message.content) for t in triggers):
-            if re.search(rf"pokes? {self_id}", message.content):
+            if re.search(rf"pokes? {self_id}", message.content, re.IGNORECASE):
                 await reactions.poke(self, message)
+            if re.search(rf"sorry,? {self_id}", message.content, re.IGNORECASE):
+                await reactions.love(self, message)
             return
 
         if is_botto(message, self.user):
