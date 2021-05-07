@@ -62,6 +62,12 @@ class MottoStorage:
         """
         raise NotImplementedError
 
+    async def remove_all_data(self, discord_id: Optional[int] = None):
+        """
+        Remove all member data for a given Discord ID.
+        """
+        raise NotImplementedError
+
     async def set_nick_option(self, member: DiscordMember, on=False):
         """
         Set the Member use_nickname option to either on or off for the provided Discord Member.
@@ -118,14 +124,12 @@ class AirtableMottoStorage(MottoStorage):
         self.auth_header = {"Authorization": f"Bearer {self.airtable_key}"}
 
     async def _list_mottos(self, filter_by_formula: str):
-        params = {
-            "filterByFormula": filter_by_formula
-        }
+        params = {"filterByFormula": filter_by_formula}
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    self.motto_url,
-                    params=params,
-                    headers=self.auth_header,
+                self.motto_url,
+                params=params,
+                headers=self.auth_header,
             ) as r:
                 motto_response: dict = await r.json()
                 return motto_response.get("records", [])
@@ -157,16 +161,15 @@ class AirtableMottoStorage(MottoStorage):
                 f"OR({filter_formula}, '{str(message_id)}' = {{Message ID}})"
             )
         log.debug("Searching with filter %r", filter_formula)
-        fetched_mottos=await self._list_mottos(filter_by_formula=filter_formula)
+        fetched_mottos = await self._list_mottos(filter_by_formula=filter_formula)
         log.info(fetched_mottos)
-        matching_mottos = [
-            Motto.from_airtable(x)
-            for x in fetched_mottos
-        ]
+        matching_mottos = [Motto.from_airtable(x) for x in fetched_mottos]
         return bool(matching_mottos)
 
     async def get_motto(self, message_id: str) -> Optional[Motto]:
-        motto_record = await self._list_mottos(filter_by_formula="{{Message ID}}={value}".format(value=message_id))
+        motto_record = await self._list_mottos(
+            filter_by_formula="{{Message ID}}={value}".format(value=message_id)
+        )
         if not motto_record:
             log.info(f"Couldn't find matching message in Airtable.")
             return
@@ -176,7 +179,9 @@ class AirtableMottoStorage(MottoStorage):
         try:
             motto = Motto.from_airtable(
                 random.choice(
-                    await self._list_mottos(filter_by_formula="{Approved by Author}=TRUE()")
+                    await self._list_mottos(
+                        filter_by_formula="{Approved by Author}=TRUE()"
+                    )
                 )
             )
         except IndexError:
@@ -204,9 +209,26 @@ class AirtableMottoStorage(MottoStorage):
             log.debug(f"Added member {member_record} to AirTable")
         return Member.from_airtable(member_record)
 
-    async def get_member(self, pk: str) -> Optional[Member]:
-        member_record = self.members.get(pk)
+    async def get_member(
+        self, pk: Optional[str] = None, discord_id: Optional[int] = None
+    ) -> Optional[Member]:
+        if pk:
+            member_record = self.members.get(pk)
+        elif discord_id:
+            member_record = self.members.match("Discord ID", str(discord_id))
+        else:
+            raise TypeError("Must be called with either pk or discord_id.")
         return Member.from_airtable(member_record) if member_record else None
+
+    async def remove_all_data(self, discord_id: Optional[int] = None):
+        member_record = await self.get_member(discord_id=discord_id)
+        if member_record:
+            log.info(
+                f"Removing mottos by {member_record.username}: {member_record.mottos}"
+            )
+            self.mottos.batch_delete(member_record.mottos)
+            log.info(f"Removing {member_record.username} ({member_record.primary_key}")
+            self.members.delete(member_record.primary_key)
 
     async def set_nick_option(self, member: DiscordMember, on=False):
         """
