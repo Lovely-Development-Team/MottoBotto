@@ -3,6 +3,7 @@ import random
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+import aiohttp
 from airtable import Airtable
 from discord import Member as DiscordMember
 
@@ -96,10 +97,38 @@ class MottoStorage:
 
 
 class AirtableMottoStorage(MottoStorage):
-    def __init__(self, mottos: Airtable, members: Airtable, bot_id: Optional[str]):
+    def __init__(
+        self,
+        mottos: Airtable,
+        members: Airtable,
+        airtable_base: str,
+        airtable_key: str,
+        bot_id: Optional[str],
+    ):
         self.mottos = mottos
         self.members = members
+        self.airtable_key = airtable_key
         self.bot_id = bot_id
+        self.motto_url = "https://api.airtable.com/v0/{base}/Motto".format(
+            base=airtable_base
+        )
+        self.members_url = "https://api.airtable.com/v0/{base}/Members".format(
+            base=airtable_base
+        )
+        self.auth_header = {"Authorization": f"Bearer {self.airtable_key}"}
+
+    async def _list_mottos(self, filter_by_formula: str):
+        params = {
+            "filterByFormula": filter_by_formula
+        }
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    self.motto_url,
+                    params=params,
+                    headers=self.auth_header,
+            ) as r:
+                motto_response: dict = await r.json()
+                return motto_response.get("records", [])
 
     async def save_motto(self, motto: Motto, fields=None):
         fields = fields or [
@@ -120,7 +149,7 @@ class AirtableMottoStorage(MottoStorage):
             self.mottos.insert(motto_data["fields"])
             log.info(f"Added Motto from message ID {motto.message_id} to AirTable")
 
-    async def get_matching_mottos(self, motto: str, message_id=None) -> list:
+    async def get_matching_mottos(self, motto: str, message_id=None) -> bool:
         filter_motto = motto.replace("'", r"\'")
         filter_formula = f"REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM('{filter_motto}')), '[^\w ]+', ''), '\s+', ' ') = REGEX_REPLACE(REGEX_REPLACE(LOWER(TRIM({{Motto}})), '[^\w ]+', ''), '\s+', ' ')"
         if message_id:
@@ -128,25 +157,26 @@ class AirtableMottoStorage(MottoStorage):
                 f"OR({filter_formula}, '{str(message_id)}' = {{Message ID}})"
             )
         log.debug("Searching with filter %r", filter_formula)
+        fetched_mottos=await self._list_mottos(filter_by_formula=filter_formula)
+        log.info(fetched_mottos)
         matching_mottos = [
             Motto.from_airtable(x)
-            for x in self.mottos.get_all(filterByFormula=filter_formula)
+            for x in fetched_mottos
         ]
         return bool(matching_mottos)
 
     async def get_motto(self, message_id: str) -> Optional[Motto]:
-
-        motto_record = self.mottos.match("Message ID", str(message_id))
+        motto_record = await self._list_mottos(filter_by_formula="{{Message ID}}={value}".format(value=message_id))
         if not motto_record:
             log.info(f"Couldn't find matching message in Airtable.")
             return
-        return Motto.from_airtable(motto_record)
+        return Motto.from_airtable(motto_record[0])
 
     async def get_random_motto(self) -> Optional[Motto]:
         try:
             motto = Motto.from_airtable(
                 random.choice(
-                    self.mottos.get_all(filterByFormula="{Approved by Author}=TRUE()")
+                    await self._list_mottos(filter_by_formula="{Approved by Author}=TRUE()")
                 )
             )
         except IndexError:
@@ -262,4 +292,4 @@ class AirtableMottoStorage(MottoStorage):
                 log.debug(
                     f'Deleting motto {motto["id"]} - message ID {motto["fields"]["Message ID"]}'
                 )
-                self.storage.mottos.delete(motto["id"])
+                self.mottos.delete(motto["id"])
