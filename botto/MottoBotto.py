@@ -231,7 +231,7 @@ class MottoBotto(discord.Client):
             if re.search(rf"sorry,? {self_id}", message.content, re.IGNORECASE):
                 await reactions.love(self, message)
             elif self.config["baby"] and re.search(
-                rf"sorry|apologi(ze|es)", message.content, re.IGNORECASE
+                rf"sorry|apologi([zs]e|es)", message.content, re.IGNORECASE
             ):
                 await reactions.rule_1(self, message)
             if self.config["baby"] and re.search(
