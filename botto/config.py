@@ -41,6 +41,7 @@ def parse(config):
             "love": ["❤️", "💕", "♥️", "💖", "💙", "💗", "💜", "💞", "💛", "💚", "❣️", "🧡", "💘", "💝", "💟", "🤍", "🤎", "💌", "😍", "🥰"],
             "delete_confirmed": "✅",
         },
+        "special_reactions": [],
         "triggers": {
             "new_motto": [],
         },
@@ -53,6 +54,7 @@ def parse(config):
         "confirm_delete_reaction": "🧨",
         "support_channel": None,
         "watching_status": "for inspiration",
+        "baby": False
     }
 
     for key in defaults.keys():
