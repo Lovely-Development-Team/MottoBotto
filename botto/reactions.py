@@ -64,6 +64,8 @@ async def deleted(botto: MottoBotto, message: Message):
 async def stored(botto: MottoBotto, message: Message, motto_message: Message):
     await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
     await message.add_reaction(botto.config["reactions"]["success"])
+    if special_reactions := botto.config["special_reactions"].get(str(motto_message.author.id)):
+        await message.add_reaction(random.choice(special_reactions))
     log.debug("Reaction added")
     if botto.config["should_reply"]:
         await message.reply(f'"{motto_message.content}" will be considered!')

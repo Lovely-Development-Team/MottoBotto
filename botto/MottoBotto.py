@@ -238,6 +238,9 @@ class MottoBotto(discord.Client):
                 await reactions.poke(self, message)
             if re.search(rf"sorry,? {self_id}", message.content, re.IGNORECASE):
                 await reactions.love(self, message)
+            elif self.config["baby"] and re.search(rf"sorry", message.content, re.IGNORECASE):
+                await message.add_reaction("⚠️")
+                await message.add_reaction("1️⃣")
             if re.search(rf"I love( you,?)? {self_id}", message.content, re.IGNORECASE):
                 await reactions.love(self, message)
             if re.search(rf"What'?s +your +fav(ou?rite)? +band +{self_id} ?\?*", message.content, re.IGNORECASE):
