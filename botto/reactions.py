@@ -23,7 +23,7 @@ async def poke(botto: MottoBotto, message: Message):
 
 
 async def love(botto: MottoBotto, message: Message):
-    log.info(f"Apology from: {message.author}")
+    log.info(f"Apology/love from: {message.author}")
     await message.add_reaction(random.choice(botto.config["reactions"]["love"]))
 
 
