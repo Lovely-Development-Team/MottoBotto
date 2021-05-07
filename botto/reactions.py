@@ -64,7 +64,9 @@ async def deleted(botto: MottoBotto, message: Message):
 async def stored(botto: MottoBotto, message: Message, motto_message: Message):
     await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
     await message.add_reaction(botto.config["reactions"]["success"])
-    if special_reactions := botto.config["special_reactions"].get(str(motto_message.author.id)):
+    if special_reactions := botto.config["special_reactions"].get(
+        str(motto_message.author.id)
+    ):
         await message.add_reaction(random.choice(special_reactions))
     log.debug("Reaction added")
     if botto.config["should_reply"]:
@@ -86,15 +88,18 @@ async def valid_emoji(botto: MottoBotto, message: Message):
     log.info(f"Valid emoji requested from {message.author}")
     await message.add_reaction(botto.config["reactions"]["valid_emoji"])
 
+
 async def rule_1(botto: MottoBotto, message: Message):
     for emoji in botto.config["reactions"]["rule_1"]:
         await message.add_reaction(emoji)
     log.info(f"Someone broke rule #1")
 
+
 async def favorite_band(botto: MottoBotto, message: Message):
     for letter in botto.config["reactions"]["favorite_band"]:
         await message.add_reaction(letter)
     log.info(f"Someone asked for favorite band")
+
 
 async def off_topic(botto: MottoBotto, message: Message):
     await message.add_reaction(random.choice(botto.config["reactions"]["off_topic"]))

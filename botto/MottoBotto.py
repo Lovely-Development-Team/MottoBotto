@@ -151,16 +151,8 @@ class MottoBotto(discord.Client):
                 log.info(f"Ignoring message not pending approval.")
                 return
 
-            member_record = self.storage.members.match("Discord ID", payload.user_id)
-            if member_record:
-                log.info(
-                    f"Removing mottos by {member_record['fields']['Username']}: {member_record['fields']['Mottos']}"
-                )
-                self.storage.mottos.batch_delete(member_record["fields"]["Mottos"])
-                log.info(
-                    f"Removing {member_record['fields']['Username']} ({member_record['id']}"
-                )
-                self.storage.members.delete(member_record["id"])
+            await self.storage.remove_all_data(payload.user_id)
+
             await message.remove_reaction(
                 self.config["reactions"]["pending"], self.user
             )
@@ -238,13 +230,21 @@ class MottoBotto(discord.Client):
                 await reactions.poke(self, message)
             if re.search(rf"sorry,? {self_id}", message.content, re.IGNORECASE):
                 await reactions.love(self, message)
-            elif self.config["baby"] and re.search(rf"sorry|apologi(ze|es)", message.content, re.IGNORECASE):
+            elif self.config["baby"] and re.search(
+                rf"sorry|apologi(ze|es)", message.content, re.IGNORECASE
+            ):
                 await reactions.rule_1(self, message)
-            if self.config["baby"] and re.search(rf"off( +|\-)topic", message.content, re.IGNORECASE):
+            if self.config["baby"] and re.search(
+                rf"off( +|\-)topic", message.content, re.IGNORECASE
+            ):
                 await reactions.off_topic(self, message)
             if re.search(rf"I love( you,?)? {self_id}", message.content, re.IGNORECASE):
                 await reactions.love(self, message)
-            if re.search(rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*", message.content, re.IGNORECASE):
+            if re.search(
+                rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*",
+                message.content,
+                re.IGNORECASE,
+            ):
                 await reactions.favorite_band(self, message)
             return
 
@@ -364,7 +364,11 @@ You can DM me the following commands:
             previous_count = None
             previous_position = 1
             for position, leader in enumerate(leaders, 1):
-                pos = previous_position if previous_count == leader.motto_count else position
+                pos = (
+                    previous_position
+                    if previous_count == leader.motto_count
+                    else position
+                )
                 plural = "s" if leader.motto_count > 1 else ""
                 leaders_message = f"{leaders_message}:{NUMBERS[pos]}: <@{leader.discord_id}> {leader.display_name} ({leader.motto_count} motto{plural})\n"
                 if previous_count != leader.motto_count:

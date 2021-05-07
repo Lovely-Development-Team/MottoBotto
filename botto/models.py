@@ -87,6 +87,7 @@ class Member(Model):
         "use_nickname",
         "motto_count",
         "bot_id",
+        "mottos",
     ]
 
     @classmethod
@@ -102,6 +103,7 @@ class Member(Model):
             use_nickname=fields.get("Use Nickname", False),
             motto_count=fields.get("Motto Count", 0),
             bot_id=fields.get("Bot ID", None),
+            mottos=fields.get("Mottos", []),
         )
 
     @property
