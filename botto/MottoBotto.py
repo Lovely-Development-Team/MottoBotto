@@ -238,16 +238,14 @@ class MottoBotto(discord.Client):
                 await reactions.poke(self, message)
             if re.search(rf"sorry,? {self_id}", message.content, re.IGNORECASE):
                 await reactions.love(self, message)
-            elif self.config["baby"] and re.search(rf"sorry", message.content, re.IGNORECASE):
-                await message.add_reaction("⚠️")
-                await message.add_reaction("1️⃣")
+            elif self.config["baby"] and re.search(rf"sorry|apologi(ze|es)", message.content, re.IGNORECASE):
+                await reactions.rule_1(self, message)
+            if self.config["baby"] and re.search(rf"off( +|\-)topic", message.content, re.IGNORECASE):
+                await reactions.off_topic(self, message)
             if re.search(rf"I love( you,?)? {self_id}", message.content, re.IGNORECASE):
                 await reactions.love(self, message)
-            if re.search(rf"What'?s +your +fav(ou?rite)? +band +{self_id} ?\?*", message.content, re.IGNORECASE):
-                log.info("BAND: BTS")
-                await message.add_reaction("🇧")
-                await message.add_reaction("🇹")
-                await message.add_reaction("🇸")
+            if re.search(rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*", message.content, re.IGNORECASE):
+                await reactions.favorite_band(self, message)
             return
 
         if is_botto(message, self.user):
