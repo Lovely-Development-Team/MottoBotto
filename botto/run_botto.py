@@ -38,7 +38,13 @@ members = Airtable(
     config["authentication"]["airtable_key"],
 )
 
-storage = AirtableMottoStorage(mottos, members, config["authentication"]["airtable_base"], config["authentication"]["airtable_key"], config["id"])
+storage = AirtableMottoStorage(
+    mottos,
+    members,
+    config["authentication"]["airtable_base"],
+    config["authentication"]["airtable_key"],
+    config["id"],
+)
 
 client = MottoBotto(config, storage)
 client.run(config["authentication"]["discord"])
