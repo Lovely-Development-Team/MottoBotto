@@ -86,6 +86,19 @@ async def valid_emoji(botto: MottoBotto, message: Message):
     log.info(f"Valid emoji requested from {message.author}")
     await message.add_reaction(botto.config["reactions"]["valid_emoji"])
 
+async def rule_1(botto: MottoBotto, message: Message):
+    for emoji in botto.config["reactions"]["rule_1"]:
+        await message.add_reaction(emoji)
+    log.info(f"Someone broke rule #1")
+
+async def favorite_band(botto: MottoBotto, message: Message):
+    for letter in botto.config["reactions"]["favorite_band"]:
+        await message.add_reaction(letter)
+    log.info(f"Someone asked for favorite band")
+
+async def off_topic(botto: MottoBotto, message: Message):
+    await message.add_reaction(random.choice(botto.config["reactions"]["off_topic"]))
+
 
 async def unknown_dm(botto: MottoBotto, message: Message):
     log.info(f"I don't know how to handle {message.content} from {message.author}")
