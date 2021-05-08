@@ -1,13 +1,14 @@
 import logging
 import random
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, Union
 
 import aiohttp
+from aiohttp import ClientSession
 from airtable import Airtable
 from discord import Member as DiscordMember
 
-from models import Motto, Member
+from models import Motto, Member, AirTableError
 
 log = logging.getLogger(__name__)
 
@@ -123,16 +124,72 @@ class AirtableMottoStorage(MottoStorage):
         )
         self.auth_header = {"Authorization": f"Bearer {self.airtable_key}"}
 
-    async def _list_mottos(self, filter_by_formula: str):
+    async def _list_mottos(
+        self, filter_by_formula: str, session: Optional[ClientSession] = None
+    ) -> dict:
         params = {"filterByFormula": filter_by_formula}
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
+
+        async def run_fetch(session_to_use: ClientSession):
+            async with session_to_use.get(
                 self.motto_url,
                 params=params,
                 headers=self.auth_header,
             ) as r:
+                if r.status != 200:
+                    raise AirTableError(await r.json())
                 motto_response: dict = await r.json()
                 return motto_response.get("records", [])
+
+        if not session:
+            async with aiohttp.ClientSession() as session:
+                return await run_fetch(session)
+        else:
+            return await run_fetch(session)
+
+    async def _delete_mottos(
+        self, mottos: [Union[str, Motto]], session: aiohttp.ClientSession = None
+    ):
+        def extract_id(motto_or_id) -> str:
+            if type(motto_or_id) is str:
+                return motto_or_id
+            elif type(motto_or_id) is dict:
+                return Motto.from_airtable(motto_or_id).primary_key
+            elif isinstance(motto_or_id, Motto):
+                return motto_or_id.primary_key
+
+        motto_ids = [extract_id(motto) for motto in mottos]
+        # AirTable API only allows us to batch delete 10 records at a time, so we need to split up requests
+        motto_ids_length = len(motto_ids)
+        delete_batches = (
+            motto_ids[offset : offset + 10] for offset in range(0, motto_ids_length, 10)
+        )
+
+        async def run_delete(batches: [[str]], session_to_use: ClientSession):
+            for records_to_delete in batches:
+                url = (
+                    self.motto_url
+                    if len(records_to_delete) > 1
+                    else self.motto_url + f"/{records_to_delete[0]}"
+                )
+                params = (
+                    {"records": records_to_delete}
+                    if len(records_to_delete) > 1
+                    else None
+                )
+                async with session_to_use.delete(
+                    url,
+                    params=params,
+                    headers=self.auth_header,
+                ) as r:
+                    if r.status != 200:
+                        log.warning(f"Failed to delete motto IDs: {motto_ids}")
+                        raise AirTableError(await r.json())
+
+        if not session:
+            async with aiohttp.ClientSession() as session:
+                await run_delete(delete_batches, session)
+        else:
+            await run_delete(delete_batches, session)
 
     async def save_motto(self, motto: Motto, fields=None):
         fields = fields or [
@@ -302,16 +359,33 @@ class AirtableMottoStorage(MottoStorage):
         ]
 
     async def remove_unapproved_messages(self, safe_period=24):
-
-        for motto in self.mottos.search("Motto", ""):
-            motto_date = datetime.strptime(
-                motto["fields"]["Date"], "%Y-%m-%dT%H:%M:%S.%f%z"
+        async with aiohttp.ClientSession() as session:
+            mottos_to_delete = []
+            fetched_mottos = await self._list_mottos(
+                filter_by_formula="NOT({Motto})", session=session
             )
-            motto_expiry_date = datetime.now(timezone.utc) - timedelta(
-                hours=safe_period
-            )
-            if motto_date < motto_expiry_date:
-                log.debug(
-                    f'Deleting motto {motto["id"]} - message ID {motto["fields"]["Message ID"]}'
+            for motto in fetched_mottos:
+                motto_date = datetime.strptime(
+                    motto["fields"]["Date"], "%Y-%m-%dT%H:%M:%S.%f%z"
                 )
-                self.mottos.delete(motto["id"])
+                motto_expiry_date = datetime.now(timezone.utc) - timedelta(
+                    hours=safe_period
+                )
+                if motto_date < motto_expiry_date:
+                    log.debug(
+                        f'Deleting motto {motto["id"]} - message ID {motto["fields"]["Message ID"]}'
+                    )
+                    mottos_to_delete.append(motto)
+
+            if len(mottos_to_delete) > 0:
+                log.debug(
+                    "Deleting {motto_count} unapproved mottos".format(
+                        motto_count=len(mottos_to_delete)
+                    )
+                )
+                await self._delete_mottos(mottos_to_delete, session)
+                log.info(
+                    "Deleted {motto_count} unapproved mottos".format(
+                        motto_count=len(mottos_to_delete)
+                    )
+                )
