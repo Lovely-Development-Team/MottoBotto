@@ -1,6 +1,9 @@
 import logging
 import random
 import re
+import time
+from typing import Optional
+
 from emoji import UNICODE_EMOJI
 import subprocess
 
@@ -8,6 +11,7 @@ import discord
 from discord import Message, DeletedReferencedMessage
 
 import reactions
+from regexes import SuggestionRegexes, compile_regexes
 from message_checks import is_botto, is_dm
 
 from models import Motto
@@ -44,11 +48,15 @@ class MottoBotto(discord.Client):
         log.info("Responding to phrases: %s", self.config["triggers"])
         log.info("Rules: %s", self.config["rules"])
 
+        self.regexes: Optional[SuggestionRegexes] = None
+
         intents = discord.Intents(messages=True, guilds=True, reactions=True)
         super().__init__(intents=intents)
 
     async def on_ready(self):
         log.info("We have logged in as {0.user}".format(self))
+        if not self.regexes:
+            self.regexes = compile_regexes(self.user.id)
         await self.change_presence(
             activity=discord.Activity(
                 type=discord.ActivityType.watching,
@@ -218,33 +226,24 @@ class MottoBotto(discord.Client):
         return True
 
     async def process_suggestion(self, message: Message):
-
-        self_id = rf"<@!?{self.user.id}>"
-
         triggers = self.config["triggers"]["new_motto"]
         if self.config["trigger_on_mention"]:
-            triggers = [re.compile(rf"^{self_id}")] + triggers
+            triggers = self.regexes.trigger + triggers
 
         if not any(t.match(message.content) for t in triggers):
-            if re.search(rf"pokes? {self_id}", message.content, re.IGNORECASE):
+            if self.regexes.pokes.search(message.content):
                 await reactions.poke(self, message)
-            if re.search(rf"sorry,? {self_id}", message.content, re.IGNORECASE):
+            if self.regexes.sorry.search(message.content):
                 await reactions.love(self, message)
-            elif self.config["baby"] and re.search(
-                rf"sorry|apologi([zs]e|es)", message.content, re.IGNORECASE
+            elif self.config["baby"] and self.regexes.apologising.search(
+                message.content
             ):
                 await reactions.rule_1(self, message)
-            if self.config["baby"] and re.search(
-                rf"off( +|\-)topic", message.content, re.IGNORECASE
-            ):
+            if self.config["baby"] and self.regexes.off_topic.search(message.content):
                 await reactions.off_topic(self, message)
-            if re.search(rf"I love( you,?)? {self_id}", message.content, re.IGNORECASE):
+            if self.regexes.love.search(message.content):
                 await reactions.love(self, message)
-            if re.search(
-                rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*",
-                message.content,
-                re.IGNORECASE,
-            ):
+            if self.regexes.band.search(message.content):
                 await reactions.favorite_band(self, message)
             return
 
