@@ -11,10 +11,11 @@ class SuggestionRegexes:
         "off_topic",
         "love",
         "band",
+        "party",
     ]
 
     def __init__(
-        self, trigger, pokes, sorry, apologising, off_topic, love, band
+        self, trigger, pokes, sorry, apologising, off_topic, love, band, party
     ) -> None:
         self.trigger: [Pattern] = trigger
         self.pokes: Pattern = pokes
@@ -23,6 +24,7 @@ class SuggestionRegexes:
         self.off_topic: Pattern = off_topic
         self.love: Pattern = love
         self.band: Pattern = band
+        self.party: Pattern = party
         super().__init__()
 
 
@@ -52,6 +54,9 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
         love=re.compile(rf"I love( you,?)? {self_id}", re.IGNORECASE),
         band=re.compile(
             rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*", re.IGNORECASE
+        ),
+        party=re.compile(
+            rf"parta?y", re.IGNORECASE
         ),
     )
     return regexes

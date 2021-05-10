@@ -231,16 +231,19 @@ class MottoBotto(discord.Client):
             triggers = self.regexes.trigger + triggers
 
         if not any(t.match(message.content) for t in triggers):
+
+            if self.config["baby"]:
+                if self.regexes.off_topic.search(message.content):
+                    await reactions.off_topic(self, message)
+                if self.regexes.apologising.search(message.content) and not self.regexes.sorry.search(message.content):
+                    await reactions.rule_1(self, message)
+                if self.regexes.party.search(message.content):
+                    await reactions.party(self, message)
+
             if self.regexes.pokes.search(message.content):
                 await reactions.poke(self, message)
             if self.regexes.sorry.search(message.content):
                 await reactions.love(self, message)
-            elif self.config["baby"] and self.regexes.apologising.search(
-                message.content
-            ):
-                await reactions.rule_1(self, message)
-            if self.config["baby"] and self.regexes.off_topic.search(message.content):
-                await reactions.off_topic(self, message)
             if self.regexes.love.search(message.content):
                 await reactions.love(self, message)
             if self.regexes.band.search(message.content):

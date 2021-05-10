@@ -27,6 +27,12 @@ async def love(botto: MottoBotto, message: Message):
     await message.add_reaction(random.choice(botto.config["reactions"]["love"]))
 
 
+async def party(botto: MottoBotto, message: Message):
+    log.info(f"Party from: {message.author}")
+    for _ in range(5):
+        await message.add_reaction(random.choice(botto.config["reactions"]["party"]))
+
+
 async def not_reply(botto: MottoBotto, message: Message):
     log.info(
         f"Suggestion from {message.author} was not a reply (Message ID {message.id})"
