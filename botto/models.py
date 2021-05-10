@@ -22,6 +22,7 @@ class Motto(Model):
         "approved_by_author",
         "approved",
         "bot_id",
+        "author_discord_id"
     ]
 
     @classmethod
@@ -41,6 +42,7 @@ class Motto(Model):
             approved_by_author=fields.get("Approved by Author"),
             approved=fields.get("Approved"),
             bot_id=fields.get("Bot ID"),
+            author_discord_id=fields.get("Member Discord ID")[0],
         )
 
     def to_airtable(self, fields=None) -> dict:
