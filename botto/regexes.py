@@ -1,31 +1,18 @@
 import re
+from dataclasses import dataclass
 from re import Pattern
 
 
+@dataclass
 class SuggestionRegexes:
-    __slots__ = [
-        "trigger",
-        "pokes",
-        "sorry",
-        "apologising",
-        "off_topic",
-        "love",
-        "band",
-        "party",
-    ]
-
-    def __init__(
-        self, trigger, pokes, sorry, apologising, off_topic, love, band, party
-    ) -> None:
-        self.trigger: [Pattern] = trigger
-        self.pokes: Pattern = pokes
-        self.sorry: Pattern = sorry
-        self.apologising: Pattern = apologising
-        self.off_topic: Pattern = off_topic
-        self.love: Pattern = love
-        self.band: Pattern = band
-        self.party: Pattern = party
-        super().__init__()
+    trigger: [Pattern]
+    pokes: Pattern
+    sorry: Pattern
+    apologising: Pattern
+    off_topic: Pattern
+    love: Pattern
+    band: Pattern
+    party: Pattern
 
 
 def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
@@ -49,7 +36,7 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
             \s* # Match any number of spaces
             (sorry|apologi([zs]e|es)) # Match sorry/apologise/apologies,etc.
         """,
-            re.IGNORECASE|re.VERBOSE,
+            re.IGNORECASE | re.VERBOSE,
         ),
         off_topic=re.compile(rf"off( +|\-)topic", re.IGNORECASE),
         love=re.compile(rf"I love( you,?)? {self_id}", re.IGNORECASE),
