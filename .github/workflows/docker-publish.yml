@@ -24,7 +24,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Load docker image from cache
+        id: cache-docker
+        uses: actions/cache@v1
+        with:
+          path: /tmp/docker-save
+          key: docker-save-${{ hashFiles('Dockerfile') }}
+
+      - name: Load cached image into Docker
+        run: docker load -i /tmp/docker-save/snapshot.tar || true
+        if: steps.cache-docker.outputs.cache-hit == 'true'
 
       - name: Run tests
         run: |
@@ -32,8 +44,16 @@ jobs:
             docker-compose --file docker-compose.test.yml build
             docker-compose --file docker-compose.test.yml run sut
           else
-            docker build .
+            docker build . -t baby-botto --cache-from=baby-botto-cache
           fi
+
+      - name: Save cache of Docker image
+        run: >
+          docker tag baby-botto baby-botto-cache &&
+          mkdir -p /tmp/docker-save &&
+          docker save baby-botto-cache -o /tmp/docker-save/snapshot.tar &&
+          ls -lh /tmp/docker-save || true
+        if: always() && steps.cache-docker.outputs.cache-hit != 'true'
 
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -49,10 +69,22 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Load docker image from cache
+        id: cache-docker
+        uses: actions/cache@v1
+        with:
+          path: /tmp/docker-save
+          key: docker-save-${{ hashFiles('Dockerfile') }}
+
+      - name: Load cached image into Docker
+        run: docker load -i /tmp/docker-save/snapshot.tar || true
+        if: steps.cache-docker.outputs.cache-hit == 'true'
+
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Build image
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME --cache-from=baby-botto-cache
 
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
