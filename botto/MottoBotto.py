@@ -333,6 +333,7 @@ You can DM me the following commands:
 `!nick on`: Use your server-specific nickname on the leaderboard instead of your Discord username. Nickname changes will auto-update the next time you approve a motto.
 `!nick off`: Use your Discord username on the leaderboard instead of your server-specific nickname.
 `!delete`: Remove all your data from MottoBotto. Confirmation is required.
+`!delete-message`: Remove a specific message by URL
 """.strip()
 
             help_channel = self.config["support_channel"]
@@ -404,6 +405,25 @@ You can DM me the following commands:
         if message_content == "!link" and self.config["leaderboard_link"] is not None:
             await message.author.dm_channel.send(self.config["leaderboard_link"])
             return
+        
+        if message_content.startswith("!delete-message"):
+            try:
+                _, link = message_content.split(None, 1)
+            except ValueError:
+                link = None
+            if link:
+                linked_message_id = link.split("/")[-1]
+                motto = await self.storage.get_motto(message_id=linked_message_id)
+                if motto:
+                    if motto.author_discord_id == str(message.author.id):
+                        log.info(f"{message.author.display_name} deleting message with id: {linked_message_id}")
+                        await self.storage.delete_motto(motto.primary_key)
+                        await message.author.dm_channel.send("Message deleted")
+                    else:
+                        await message.author.dm_channel.send("You can't delete this message")
+                else:
+                    await message.author.dm_channel.send("Message not found")
+                return                        
 
         if message_content.startswith("!nick"):
             try:
