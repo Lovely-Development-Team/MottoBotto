@@ -30,7 +30,7 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
               (?:
                 (?:sincer|great) # Matching the start of sincere/great
                 (?:est|e(?:ly)?)? # Match the end of sincerest/sincere/sincerely
-                |so|very|much|such
+                |so|very|[ms]uch
               )
             .?)* # Match any number of "sincerely", "greatest", "so" etc. with or without characters in between
             \s* # Match any number of spaces
