@@ -37,7 +37,7 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
         sorry=re.compile(rf"sorry,? {self_id}", re.IGNORECASE),
         apologising=re.compile(
             rf"""
-            (?:I['"m]+|my|^) # Match I/I'm/My
+            (?:I['"’m]+|my|^) # Match I/I'm/My
             \s* # Match any number of spaces
             (?:
               (?:
