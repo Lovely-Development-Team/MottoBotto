@@ -119,32 +119,67 @@ class AirtableMottoStorage(MottoStorage):
         self.motto_url = "https://api.airtable.com/v0/{base}/Motto".format(
             base=airtable_base
         )
-        self.members_url = "https://api.airtable.com/v0/{base}/Members".format(
+        self.members_url = "https://api.airtable.com/v0/{base}/Member".format(
             base=airtable_base
         )
         self.auth_header = {"Authorization": f"Bearer {self.airtable_key}"}
 
-    async def _list_mottos(
-        self, filter_by_formula: str, session: Optional[ClientSession] = None
+    async def _get(
+        self,
+        url: str,
+        params: Optional[dict[str, str]] = None,
+        session: Optional[ClientSession] = None,
     ) -> dict:
-        params = {"filterByFormula": filter_by_formula}
-
         async def run_fetch(session_to_use: ClientSession):
             async with session_to_use.get(
-                self.motto_url,
+                url,
                 params=params,
                 headers=self.auth_header,
             ) as r:
                 if r.status != 200:
                     raise AirTableError(await r.json())
                 motto_response: dict = await r.json()
-                return motto_response.get("records", [])
+                return motto_response
 
         if not session:
             async with aiohttp.ClientSession() as session:
                 return await run_fetch(session)
         else:
             return await run_fetch(session)
+
+    async def _list(
+        self,
+        base_url: str,
+        filter_by_formula: str,
+        session: Optional[ClientSession] = None,
+    ) -> dict:
+        params = {"filterByFormula": filter_by_formula}
+        response = await self._get(base_url, params, session)
+        return response.get("records", [])
+
+    async def _list_mottos(
+        self, filter_by_formula: str, session: Optional[ClientSession] = None
+    ) -> dict:
+        return await self._list(self.motto_url, filter_by_formula, session)
+
+    async def _list_members(
+        self, filter_by_formula: str, session: Optional[ClientSession] = None
+    ) -> dict:
+        return await self._list(self.members_url, filter_by_formula, session)
+
+    async def _find_member_by_discord_id(
+        self, discord_id: str, session: Optional[ClientSession] = None
+    ) -> Optional[dict]:
+        members = await self._list_members(
+            filter_by_formula="{{Discord ID}}={value}".format(value=discord_id),
+            session=session,
+        )
+        return members[0] if members else None
+
+    async def _retrieve_member(
+        self, member_id: str, session: Optional[ClientSession] = None
+    ) -> dict:
+        return await self._get(self.members_url + member_id, session=session)
 
     async def _delete_mottos(
         self, mottos: [Union[str, Motto]], session: aiohttp.ClientSession = None
@@ -247,7 +282,7 @@ class AirtableMottoStorage(MottoStorage):
         return motto
 
     async def delete_motto(self, pk: str):
-        self.mottos.delete(pk)
+        await self._delete_mottos([pk])
 
     async def get_or_add_member(self, member: DiscordMember) -> Member:
         """
@@ -255,7 +290,7 @@ class AirtableMottoStorage(MottoStorage):
         :param member: The member
         :return: The record from AirTable for this member
         """
-        member_record = self.members.match("Discord ID", member.id)
+        member_record = await self._find_member_by_discord_id(member.id)
         if not member_record:
             data = {
                 "Username": member.name,
@@ -270,9 +305,9 @@ class AirtableMottoStorage(MottoStorage):
         self, pk: Optional[str] = None, discord_id: Optional[int] = None
     ) -> Optional[Member]:
         if pk:
-            member_record = self.members.get(pk)
+            member_record = await self._retrieve_member(pk)
         elif discord_id:
-            member_record = self.members.match("Discord ID", str(discord_id))
+            member_record = await self._find_member_by_discord_id(str(discord_id))
         else:
             raise TypeError("Must be called with either pk or discord_id.")
         return Member.from_airtable(member_record) if member_record else None
