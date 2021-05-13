@@ -44,7 +44,7 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
             rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*", re.IGNORECASE
         ),
         party=re.compile(
-            rf"parta*y", re.IGNORECASE
+            rf"(?:^|\s)part(?:a*y|ies)", re.IGNORECASE
         ),
     )
     return regexes
