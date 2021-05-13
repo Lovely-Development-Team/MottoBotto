@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import random
 
@@ -29,8 +30,10 @@ async def love(botto: MottoBotto, message: Message):
 
 async def party(botto: MottoBotto, message: Message):
     log.info(f"Party from: {message.author}")
+    tasks = []
     for _ in range(5):
-        await message.add_reaction(random.choice(botto.config["reactions"]["party"]))
+        tasks.append(message.add_reaction(random.choice(botto.config["reactions"]["party"])))
+    await asyncio.wait(tasks)
 
 
 async def not_reply(botto: MottoBotto, message: Message):
