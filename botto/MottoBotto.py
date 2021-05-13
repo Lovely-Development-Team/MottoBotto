@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import random
 import re
@@ -235,7 +236,9 @@ class MottoBotto(discord.Client):
             if self.config["baby"]:
                 if self.regexes.off_topic.search(message.content):
                     await reactions.off_topic(self, message)
-                if self.regexes.apologising.search(message.content) and not self.regexes.sorry.search(message.content):
+                if self.regexes.apologising.search(
+                    message.content
+                ) and not self.regexes.sorry.search(message.content):
                     await reactions.rule_1(self, message)
                 if self.regexes.party.search(message.content):
                     await reactions.party(self, message)
@@ -276,8 +279,10 @@ class MottoBotto(discord.Client):
 
         # Find the nominee and nominator
         try:
-            nominee = await self.storage.get_or_add_member(motto_message.author)
-            nominator = await self.storage.get_or_add_member(message.author)
+            nominee, nominator = await asyncio.gather(
+                self.storage.get_or_add_member(motto_message.author),
+                self.storage.get_or_add_member(message.author),
+            )
             log.info(
                 f"Fetched/added nominee {nominee.username!r} and nominator {nominator.username!r}"
             )
@@ -296,8 +301,10 @@ class MottoBotto(discord.Client):
 
             await reactions.pending(self, message, motto_message)
 
-            await self.storage.update_name(nominee, motto_message.author)
-            await self.storage.update_name(nominator, message.author)
+            await asyncio.gather(
+                self.storage.update_name(nominee, motto_message.author),
+                self.storage.update_name(nominator, message.author),
+            )
             log.debug("Updated names in airtable")
         except Exception as e:
             log.error("Failed to process suggestion", exc_info=True)
