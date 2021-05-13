@@ -24,8 +24,14 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
         sorry=re.compile(rf"sorry,? {self_id}", re.IGNORECASE),
         apologising=re.compile(
             rf"""
-            (?:I['"’m]+|my|yeah[,.;]*|^) # Match I/I'm/My
-            \s* # Match any number of spaces
+            (?:
+                I['"’m]+ #Match I/I'm
+                |my
+                |ye[ah|es]* # Match variations on yeah/yes
+                |(n*o+)+
+                |^ # Match the start of a string
+            )
+            [,.;\s]* # Match any number of spaces/punctuation
             (?:
               (?:
                 (?:sincer|great) # Matching the start of sincere/great
