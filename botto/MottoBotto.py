@@ -9,7 +9,7 @@ from emoji import UNICODE_EMOJI
 import subprocess
 
 import discord
-from discord import Message, DeletedReferencedMessage
+from discord import Message, DeletedReferencedMessage, Guild
 
 import reactions
 from regexes import SuggestionRegexes, compile_regexes
@@ -58,6 +58,7 @@ class MottoBotto(discord.Client):
         log.info("We have logged in as {0.user}".format(self))
         if not self.regexes:
             self.regexes = compile_regexes(self.user.id)
+
         await self.change_presence(
             activity=discord.Activity(
                 type=discord.ActivityType.watching,
@@ -118,7 +119,27 @@ class MottoBotto(discord.Client):
                 log.info(f"Couldn't find matching message.")
                 return
 
-            actual_motto = self.clean_message(motto_message)
+            trigger = None
+            for t in self.triggers:
+                if t.match(message.content):
+                    trigger = t
+                    break
+
+            if not trigger:
+                log.info(f"Ignoring approval on non-trigger message.")
+                return
+
+            trigger_message_content = self.clean_trigger_message(trigger, message.content)
+            log.info(f"Trigger message content: {trigger_message_content!r}")
+
+            if trigger_message_content:
+                if trigger_message_content not in motto_message.content:
+                    log.info(f"Ignoring approval on quoted exerpt {trigger_message_content!r} not found in existing message {motto_message.content!r}")
+                    return
+                actual_motto = self.clean_message(trigger_message_content, message.guild)
+
+            else:
+                actual_motto = self.clean_message(motto_message.content, motto_message.guild)
 
             if await self.is_repeat_message(motto_message, check_id=False):
                 await self.storage.delete_motto(pk=motto.primary_key)
@@ -192,9 +213,10 @@ class MottoBotto(discord.Client):
         await self.process_suggestion(message)
         await self.remove_unapproved_messages()
 
-    def clean_message(self, message: Message) -> str:
+    def clean_trigger_message(self, trigger, message) -> str:
+        return trigger.sub("", message).strip().strip("'\"”“")
 
-        actual_motto = message.content
+    def clean_message(self, actual_motto: str, guild: Guild) -> str:
 
         for channel_id in CHANNEL_REGEX.findall(actual_motto):
             channel = self.get_channel(int(channel_id))
@@ -202,7 +224,7 @@ class MottoBotto(discord.Client):
                 continue
             actual_motto = actual_motto.replace(f"<#{channel_id}>", f"#{channel.name}")
 
-        server_emojis = {x.name: str(x) for x in message.guild.emojis}
+        server_emojis = {x.name: str(x) for x in guild.emojis}
         for emoji in server_emojis:
             if server_emojis[emoji] in actual_motto:
                 actual_motto = actual_motto.replace(server_emojis[emoji], f":{emoji}:")
@@ -211,7 +233,7 @@ class MottoBotto(discord.Client):
 
     async def is_repeat_message(self, message: Message, check_id=True) -> bool:
         matching_mottos = await self.storage.get_matching_mottos(
-            self.clean_message(message), message_id=message.id if check_id else None
+            self.clean_message(message.content, message.guild), message_id=message.id if check_id else None
         )
         return bool(matching_mottos)
 
@@ -226,12 +248,22 @@ class MottoBotto(discord.Client):
             return False
         return True
 
-    async def process_suggestion(self, message: Message):
+    @property
+    def triggers(self):
         triggers = self.config["triggers"]["new_motto"]
         if self.config["trigger_on_mention"]:
             triggers = self.regexes.trigger + triggers
+        return triggers
 
-        if not any(t.match(message.content) for t in triggers):
+    async def process_suggestion(self, message: Message):
+
+        trigger = None
+        for t in self.triggers:
+            if t.match(message.content):
+                trigger = t
+                break
+
+        if not trigger:
 
             if self.config["baby"]:
                 if self.regexes.off_topic.search(message.content):
@@ -242,6 +274,8 @@ class MottoBotto(discord.Client):
                     await reactions.rule_1(self, message)
                 if self.regexes.party.search(message.content):
                     await reactions.party(self, message)
+                if message.content.strip().lower() == "I am 🐌":
+                    await reactions.snail(self, message)
 
             if self.regexes.pokes.search(message.content):
                 await reactions.poke(self, message)
@@ -272,6 +306,14 @@ class MottoBotto(discord.Client):
             return
 
         log.info(f'Motto suggestion incoming: "{motto_message.content}"')
+
+        trigger_message_content = self.clean_trigger_message(trigger, message.content)
+        log.info(f"Trigger message content: {trigger_message_content!r}")
+
+        if trigger_message_content and trigger_message_content not in motto_message.content:
+            log.info(f"Quoted exerpt {trigger_message_content!r} not found in existing message {motto_message.content!r}")
+            await reactions.not_reply(self, message)
+            return
 
         if await self.is_repeat_message(motto_message):
             await reactions.duplicate(self, message)
