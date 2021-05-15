@@ -18,6 +18,11 @@ async def skynet_prevention(botto: MottoBotto, message: Message):
         await message.reply("Skynet prevention")
 
 
+async def snail(botto: MottoBotto, message: Message):
+    log.info(f"Snail from: {message.author}")
+    await message.add_reaction("🐌")
+
+
 async def poke(botto: MottoBotto, message: Message):
     log.info(f"Poke from: {message.author}")
     await message.add_reaction(random.choice(botto.config["reactions"]["poke"]))
