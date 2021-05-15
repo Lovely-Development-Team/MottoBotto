@@ -15,6 +15,9 @@ class SuggestionRegexes:
     party: Pattern
 
 
+laugh_emojis = "[😆😂🤣]"
+
+
 def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
     self_id = rf"<@!?{bot_user_id}>"
 
@@ -29,6 +32,7 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
                 |my
                 |ye[ah|es]* # Match variations on yeah/yes
                 |(n*o+)+
+                |\(
                 |^ # Match the start of a string
             )
             [,.;\s]* # Match any number of spaces/punctuation
@@ -41,8 +45,9 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
             .?)* # Match any number of "sincerely", "greatest", "so" etc. with or without characters in between
             \s* # Match any number of spaces
             (sorry|apologi([zs]e|es)) # Match sorry/apologise/apologies,etc.
+            (?!\s*{laugh_emojis})
         """,
-            re.IGNORECASE | re.VERBOSE,
+            re.IGNORECASE | re.VERBOSE | re.UNICODE,
         ),
         off_topic=re.compile(rf"off( +|\-)topic", re.IGNORECASE),
         love=re.compile(rf"I love( you,?)? {self_id}", re.IGNORECASE),
