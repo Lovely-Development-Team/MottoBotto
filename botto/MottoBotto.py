@@ -274,8 +274,6 @@ class MottoBotto(discord.Client):
                     await reactions.rule_1(self, message)
                 if self.regexes.party.search(message.content):
                     await reactions.party(self, message)
-                if message.content.strip().lower() == "I am 🐌":
-                    await reactions.snail(self, message)
 
             if self.regexes.pokes.search(message.content):
                 await reactions.poke(self, message)
@@ -285,6 +283,8 @@ class MottoBotto(discord.Client):
                 await reactions.love(self, message)
             if self.regexes.band.search(message.content):
                 await reactions.favorite_band(self, message)
+            if message.content.strip().lower() in ("i am 🐌", "i am snail"):
+                await reactions.snail(self, message)
             return
 
         if is_botto(message, self.user):

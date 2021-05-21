@@ -179,7 +179,7 @@ class AirtableMottoStorage(MottoStorage):
     async def _retrieve_member(
         self, member_id: str, session: Optional[ClientSession] = None
     ) -> dict:
-        return await self._get(self.members_url + member_id, session=session)
+        return await self._get(f"{self.members_url}/{member_id}", session=session)
 
     async def _delete_mottos(
         self, mottos: [Union[str, Motto]], session: aiohttp.ClientSession = None
