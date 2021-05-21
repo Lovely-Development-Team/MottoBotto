@@ -371,7 +371,7 @@ class MottoBotto(discord.Client):
             )
 
             help_message = f"""
-Reply to a great motto in the supported channels with {trigger} to tell me about it! (Note: you can't nominate yourself.)
+Reply to a great motto in the supported channels with {trigger} to tell me about it! You can nominate a section of a message with \"{trigger} <excerpt>\". (Note: you can't nominate yourself.)
 
 You can DM me the following commands:
 `!random`: Get a random motto.
