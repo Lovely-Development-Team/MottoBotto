@@ -33,11 +33,18 @@ async def love(botto: MottoBotto, message: Message):
     await message.add_reaction(random.choice(botto.config["reactions"]["love"]))
 
 
+async def hug(botto: MottoBotto, message: Message):
+    log.info(f"Hug from: {message.author}")
+    await message.add_reaction(random.choice(botto.config["reactions"]["hug"]))
+
+
 async def party(botto: MottoBotto, message: Message):
     log.info(f"Party from: {message.author}")
     tasks = []
     for _ in range(5):
-        tasks.append(message.add_reaction(random.choice(botto.config["reactions"]["party"])))
+        tasks.append(
+            message.add_reaction(random.choice(botto.config["reactions"]["party"]))
+        )
     await asyncio.wait(tasks)
 
 
