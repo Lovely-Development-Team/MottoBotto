@@ -115,7 +115,7 @@ async def run_request(
         return await action_to_run(session)
 
 
-async def airable_sleep():
+async def airtable_sleep():
     await asyncio.sleep(1.0 / 5)
 
 
@@ -157,7 +157,7 @@ class AirtableMottoStorage(MottoStorage):
 
         async with self.semaphore:
             result = await run_request(run_fetch, session)
-            await airable_sleep()
+            await airtable_sleep()
             return result
 
     async def _list(
@@ -188,7 +188,7 @@ class AirtableMottoStorage(MottoStorage):
                 params.update(offset=offset)
             async with self.semaphore:
                 response = await self._get(base_url, params, session)
-                await airable_sleep()
+                await airtable_sleep()
             records = response.get("records", [])
             for record in records:
                 yield record
@@ -222,7 +222,7 @@ class AirtableMottoStorage(MottoStorage):
 
         async with self.semaphore:
             result = await run_request(run_delete, session)
-            await airable_sleep()
+            await airtable_sleep()
             return result
 
     async def _modify(
@@ -247,7 +247,7 @@ class AirtableMottoStorage(MottoStorage):
 
         async with self.semaphore:
             result = await run_request(run_insert, session)
-            await airable_sleep()
+            await airtable_sleep()
             return result
 
     async def _insert(
