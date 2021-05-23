@@ -1,9 +1,6 @@
 import os
 import json
-import logging
 import logging.config
-
-from airtable import Airtable
 
 from MottoBotto import MottoBotto
 from motto_storage import AirtableMottoStorage
@@ -27,14 +24,7 @@ except (IOError, OSError, ValueError) as err:
 
 log.info(f"Triggers: {config['triggers']}")
 
-members = Airtable(
-    config["authentication"]["airtable_base"],
-    "member",
-    config["authentication"]["airtable_key"],
-)
-
 storage = AirtableMottoStorage(
-    members,
     config["authentication"]["airtable_base"],
     config["authentication"]["airtable_key"],
     config["id"],
