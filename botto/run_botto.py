@@ -27,11 +27,6 @@ except (IOError, OSError, ValueError) as err:
 
 log.info(f"Triggers: {config['triggers']}")
 
-mottos = Airtable(
-    config["authentication"]["airtable_base"],
-    "motto",
-    config["authentication"]["airtable_key"],
-)
 members = Airtable(
     config["authentication"]["airtable_base"],
     "member",
@@ -39,7 +34,6 @@ members = Airtable(
 )
 
 storage = AirtableMottoStorage(
-    mottos,
     members,
     config["authentication"]["airtable_base"],
     config["authentication"]["airtable_key"],
