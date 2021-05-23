@@ -11,6 +11,7 @@ class SuggestionRegexes:
     apologising: Pattern
     off_topic: Pattern
     love: Pattern
+    hug: Pattern
     band: Pattern
     party: Pattern
 
@@ -51,6 +52,7 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
         ),
         off_topic=re.compile(rf"off( +|\-)topic", re.IGNORECASE),
         love=re.compile(rf"I love( you,?)? {self_id}", re.IGNORECASE),
+        hug=re.compile(rf"Hugs? {self_id}", re.IGNORECASE),
         band=re.compile(
             rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*", re.IGNORECASE
         ),
