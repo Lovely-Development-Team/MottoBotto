@@ -115,6 +115,10 @@ async def run_request(
         return await action_to_run(session)
 
 
+async def airable_sleep():
+    await asyncio.sleep(1.0 / 5)
+
+
 class AirtableMottoStorage(MottoStorage):
     def __init__(
         self,
@@ -131,6 +135,7 @@ class AirtableMottoStorage(MottoStorage):
             base=airtable_base
         )
         self.auth_header = {"Authorization": f"Bearer {self.airtable_key}"}
+        self.semaphore = asyncio.Semaphore(5)
 
     async def _get(
         self,
@@ -150,7 +155,10 @@ class AirtableMottoStorage(MottoStorage):
                 motto_response: dict = await r.json()
                 return motto_response
 
-        return await run_request(run_fetch, session)
+        async with self.semaphore:
+            result = await run_request(run_fetch, session)
+            await airable_sleep()
+            return result
 
     async def _list(
         self,
@@ -178,9 +186,10 @@ class AirtableMottoStorage(MottoStorage):
         while True:
             if offset:
                 params.update(offset=offset)
-            response = await self._get(base_url, params, session)
+            async with self.semaphore:
+                response = await self._get(base_url, params, session)
+                await airable_sleep()
             records = response.get("records", [])
-            await asyncio.sleep(1.0 / 5)
             for record in records:
                 yield record
             offset = response.get("offset")
@@ -211,7 +220,10 @@ class AirtableMottoStorage(MottoStorage):
                     log.warning(f"Failed to delete IDs: {records_to_delete}")
                     raise AirTableError(r.url, await r.json())
 
-        return await run_request(run_delete, session)
+        async with self.semaphore:
+            result = await run_request(run_delete, session)
+            await airable_sleep()
+            return result
 
     async def _modify(
         self,
@@ -233,7 +245,10 @@ class AirtableMottoStorage(MottoStorage):
                 motto_response: dict = await r.json()
                 return motto_response
 
-        return await run_request(run_insert, session)
+        async with self.semaphore:
+            result = await run_request(run_insert, session)
+            await airable_sleep()
+            return result
 
     async def _insert(
         self, url: str, record: dict, session: Optional[ClientSession] = None
