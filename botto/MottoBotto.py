@@ -280,6 +280,8 @@ class MottoBotto(discord.Client):
                 await reactions.love(self, message)
             if self.regexes.love.search(message.content):
                 await reactions.love(self, message)
+            if self.regexes.hug.search(message.content):
+                await reactions.hug(self, message)
             if self.regexes.band.search(message.content):
                 await reactions.favorite_band(self, message)
             if message.content.strip().lower() in ("i am 🐌", "i am snail"):
