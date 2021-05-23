@@ -1,7 +1,7 @@
 import logging
 import random
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Union
+from typing import Optional, Union, Literal, Callable, Awaitable
 
 import aiohttp
 from aiohttp import ClientSession
@@ -103,16 +103,25 @@ class MottoStorage:
         raise NotImplementedError
 
 
+async def run_request(
+    action_to_run: Callable[[ClientSession], Awaitable[dict]],
+    session: Optional[ClientSession] = None,
+):
+    if not session:
+        async with aiohttp.ClientSession() as new_session:
+            return await action_to_run(new_session)
+    else:
+        return await action_to_run(session)
+
+
 class AirtableMottoStorage(MottoStorage):
     def __init__(
         self,
-        mottos: Airtable,
         members: Airtable,
         airtable_base: str,
         airtable_key: str,
         bot_id: Optional[str],
     ):
-        self.mottos = mottos
         self.members = members
         self.airtable_key = airtable_key
         self.bot_id = bot_id
@@ -137,15 +146,12 @@ class AirtableMottoStorage(MottoStorage):
                 headers=self.auth_header,
             ) as r:
                 if r.status != 200:
-                    raise AirTableError(await r.json())
+                    print(r.url)
+                    raise AirTableError(r.url, await r.json())
                 motto_response: dict = await r.json()
                 return motto_response
 
-        if not session:
-            async with aiohttp.ClientSession() as session:
-                return await run_fetch(session)
-        else:
-            return await run_fetch(session)
+        return await run_request(run_fetch, session)
 
     async def _list(
         self,
@@ -156,6 +162,64 @@ class AirtableMottoStorage(MottoStorage):
         params = {"filterByFormula": filter_by_formula}
         response = await self._get(base_url, params, session)
         return response.get("records", [])
+
+    async def _delete(
+        self,
+        base_url: str,
+        records_to_delete: [str],
+        session: Optional[ClientSession] = None,
+    ):
+        async def run_delete(session_to_use: ClientSession):
+            async with session_to_use.delete(
+                (
+                    base_url
+                    if len(records_to_delete) > 1
+                    else self.motto_url + f"/{records_to_delete[0]}"
+                ),
+                params=(
+                    {"records": records_to_delete}
+                    if len(records_to_delete) > 1
+                    else None
+                ),
+                headers=self.auth_header,
+            ) as r:
+                if r.status != 200:
+                    log.warning(f"Failed to delete IDs: {records_to_delete}")
+                    raise AirTableError(r.url, await r.json())
+
+        return await run_request(run_delete, session)
+
+    async def _modify(
+        self,
+        url: str,
+        method: Literal["post", "patch"],
+        record: dict,
+        session: Optional[ClientSession] = None,
+    ):
+        async def run_insert(session_to_use: ClientSession):
+            data = {"fields": record}
+            async with session_to_use.request(
+                method,
+                url,
+                json=data,
+                headers=self.auth_header,
+            ) as r:
+                if r.status != 200:
+                    raise AirTableError(r.url, await r.json())
+                motto_response: dict = await r.json()
+                return motto_response
+
+        return await run_request(run_insert, session)
+
+    async def _insert(
+        self, url: str, record: dict, session: Optional[ClientSession] = None
+    ):
+        await self._modify(url, "post", record, session)
+
+    async def _update(
+        self, url: str, record: dict, session: Optional[ClientSession] = None
+    ):
+        await self._modify(url, "patch", record, session)
 
     async def _list_mottos(
         self, filter_by_formula: str, session: Optional[ClientSession] = None
@@ -199,32 +263,33 @@ class AirtableMottoStorage(MottoStorage):
             motto_ids[offset : offset + 10] for offset in range(0, motto_ids_length, 10)
         )
 
-        async def run_delete(batches: [[str]], session_to_use: ClientSession):
-            for records_to_delete in batches:
-                url = (
-                    self.motto_url
-                    if len(records_to_delete) > 1
-                    else self.motto_url + f"/{records_to_delete[0]}"
-                )
-                params = (
-                    {"records": records_to_delete}
-                    if len(records_to_delete) > 1
-                    else None
-                )
-                async with session_to_use.delete(
-                    url,
-                    params=params,
-                    headers=self.auth_header,
-                ) as r:
-                    if r.status != 200:
-                        log.warning(f"Failed to delete motto IDs: {motto_ids}")
-                        raise AirTableError(await r.json())
+        for records_to_delete in delete_batches:
+            await self._delete(self.motto_url, records_to_delete, session)
 
-        if not session:
-            async with aiohttp.ClientSession() as session:
-                await run_delete(delete_batches, session)
-        else:
-            await run_delete(delete_batches, session)
+    async def _delete_members(
+        self, members: [str], session: aiohttp.ClientSession = None
+    ):
+        # AirTable API only allows us to batch delete 10 records at a time, so we need to split up requests
+        member_ids_length = len(members)
+        delete_batches = (
+            members[offset : offset + 10] for offset in range(0, member_ids_length, 10)
+        )
+
+        for records_to_delete in delete_batches:
+            await self._delete(self.motto_url, records_to_delete, session)
+
+    async def insert_motto(
+        self, motto_record: dict, session: Optional[ClientSession] = None
+    ):
+        await self._insert(self.motto_url, motto_record, session)
+
+    async def update_motto(
+        self,
+        record_id: str,
+        motto_record: dict,
+        session: Optional[ClientSession] = None,
+    ):
+        await self._update(self.motto_url + "/" + record_id, motto_record, session)
 
     async def save_motto(self, motto: Motto, fields=None):
         fields = fields or [
@@ -239,10 +304,10 @@ class AirtableMottoStorage(MottoStorage):
         motto_data = motto.to_airtable(fields=fields)
         log.info(f"Adding motto data: {motto_data['fields']}")
         if motto.primary_key:
-            self.mottos.update(motto_data["id"], motto_data["fields"])
+            await self.update_motto(motto_data["id"], motto_data["fields"])
             log.info(f"Updated Motto from message ID {motto.message_id} in AirTable")
         else:
-            self.mottos.insert(motto_data["fields"])
+            await self.insert_motto(motto_data["fields"])
             log.info(f"Added Motto from message ID {motto.message_id} to AirTable")
 
     async def get_matching_mottos(self, motto: str, message_id=None) -> bool:
@@ -318,9 +383,12 @@ class AirtableMottoStorage(MottoStorage):
             log.info(
                 f"Removing mottos by {member_record.username}: {member_record.mottos}"
             )
-            self.mottos.batch_delete(member_record.mottos)
-            log.info(f"Removing {member_record.username} ({member_record.primary_key}")
-            self.members.delete(member_record.primary_key)
+            async with aiohttp.ClientSession() as session:
+                await self._delete_mottos(member_record.mottos, session)
+                log.info(
+                    f"Removing {member_record.username} ({member_record.primary_key}"
+                )
+                await self._delete_members([member_record.primary_key], session)
 
     async def set_nick_option(self, member: DiscordMember, on=False):
         """
