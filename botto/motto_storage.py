@@ -1,11 +1,12 @@
+import asyncio
 import logging
 import random
+from collections import AsyncGenerator
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Union, Literal, Callable, Awaitable
 
 import aiohttp
 from aiohttp import ClientSession
-from airtable import Airtable
 from discord import Member as DiscordMember
 
 from models import Motto, Member, AirTableError
@@ -87,7 +88,7 @@ class MottoStorage:
         """
         raise NotImplementedError
 
-    def get_support_users(self) -> list:
+    async def get_support_users(self) -> list:
         """
         Return a list of support Members.
         """
@@ -117,12 +118,10 @@ async def run_request(
 class AirtableMottoStorage(MottoStorage):
     def __init__(
         self,
-        members: Airtable,
         airtable_base: str,
         airtable_key: str,
         bot_id: Optional[str],
     ):
-        self.members = members
         self.airtable_key = airtable_key
         self.bot_id = bot_id
         self.motto_url = "https://api.airtable.com/v0/{base}/Motto".format(
@@ -162,6 +161,31 @@ class AirtableMottoStorage(MottoStorage):
         params = {"filterByFormula": filter_by_formula}
         response = await self._get(base_url, params, session)
         return response.get("records", [])
+
+    async def _iterate(
+        self,
+        base_url: str,
+        filter_by_formula: str,
+        sort: Optional[list[str]] = None,
+        session: Optional[ClientSession] = None,
+    ) -> AsyncGenerator[dict]:
+        params = {"filterByFormula": filter_by_formula}
+        if sort:
+            for idx, field in enumerate(sort):
+                params.update({"sort[{index}][field]".format(index=idx): field})
+                params.update({"sort[{index}][direction]".format(index=idx): "asc"})
+        offset = None
+        while True:
+            if offset:
+                params.update(offset=offset)
+            response = await self._get(base_url, params, session)
+            records = response.get("records", [])
+            await asyncio.sleep(1.0 / 5)
+            for record in records:
+                yield record
+            offset = response.get("offset")
+            if not offset:
+                break
 
     async def _delete(
         self,
@@ -231,6 +255,14 @@ class AirtableMottoStorage(MottoStorage):
     ) -> dict:
         return await self._list(self.members_url, filter_by_formula, session)
 
+    def _list_all_members(
+        self,
+        filter_by_formula: str,
+        sort: [str],
+        session: Optional[ClientSession] = None,
+    ) -> AsyncGenerator[dict]:
+        return self._iterate(self.members_url, filter_by_formula, sort, session)
+
     async def _find_member_by_discord_id(
         self, discord_id: str, session: Optional[ClientSession] = None
     ) -> Optional[dict]:
@@ -283,6 +315,11 @@ class AirtableMottoStorage(MottoStorage):
     ):
         await self._insert(self.motto_url, motto_record, session)
 
+    async def insert_member(
+        self, motto_record: dict, session: Optional[ClientSession] = None
+    ):
+        await self._insert(self.members_url, motto_record, session)
+
     async def update_motto(
         self,
         record_id: str,
@@ -290,6 +327,14 @@ class AirtableMottoStorage(MottoStorage):
         session: Optional[ClientSession] = None,
     ):
         await self._update(self.motto_url + "/" + record_id, motto_record, session)
+
+    async def update_member(
+        self,
+        record_id: str,
+        motto_record: dict,
+        session: Optional[ClientSession] = None,
+    ):
+        await self._update(self.members_url + "/" + record_id, motto_record, session)
 
     async def save_motto(self, motto: Motto, fields=None):
         fields = fields or [
@@ -362,7 +407,7 @@ class AirtableMottoStorage(MottoStorage):
                 "Discord ID": str(member.id),
                 "Bot ID": self.bot_id or "",
             }
-            member_record = self.members.insert(data)
+            member_record = await self.insert_member(data)
             log.debug(f"Added member {member_record} to AirTable")
         return Member.from_airtable(member_record)
 
@@ -403,7 +448,7 @@ class AirtableMottoStorage(MottoStorage):
         if not on:
             update["Nickname"] = None
         log.debug(f"Recording changes for {member}: {update}")
-        self.members.update(member_record.primary_key, update)
+        await self.update_member(member_record.primary_key, update)
 
     async def update_name(self, member_record: Member, member: DiscordMember):
 
@@ -428,7 +473,7 @@ class AirtableMottoStorage(MottoStorage):
 
         if update_dict:
             log.debug(f"Recorded changes {update_dict}")
-            self.members.update(member_record.primary_key, update_dict)
+            await self.update_member(member_record.primary_key, update_dict)
 
     async def update_emoji(self, member_record: Member, emoji: str):
         """
@@ -443,15 +488,13 @@ class AirtableMottoStorage(MottoStorage):
 
         if member_record.emoji != data.get("Emoji"):
             log.debug("Updating member emoji details")
-            self.members.update(member_record.primary_key, data)
+            await self.update_member(member_record.primary_key, data)
 
-    def get_support_users(self) -> list:
-        return [
-            Member.from_airtable(x)
-            for x in self.members.get_all(
-                sort=["Username"], filterByFormula="{Support}=TRUE()"
-            )
-        ]
+    async def get_support_users(self) -> list:
+        members_iterator = self._list_all_members(
+            sort=["Username"], filter_by_formula="{Support}=TRUE()"
+        )
+        return [Member.from_airtable(x) async for x in members_iterator]
 
     def get_leaders(self, count=10) -> list:
         return [
