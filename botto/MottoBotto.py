@@ -2,7 +2,6 @@ import asyncio
 import logging
 import random
 import re
-import time
 from typing import Optional
 
 from emoji import UNICODE_EMOJI
@@ -386,7 +385,7 @@ You can DM me the following commands:
 
             help_channel = self.config["support_channel"]
             users = ", ".join(
-                f"<@{user.discord_id}>" for user in self.storage.get_support_users()
+                f"<@{user.discord_id}>" for user in await self.storage.get_support_users()
             )
 
             if help_channel or users:
