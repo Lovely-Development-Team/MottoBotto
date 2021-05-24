@@ -53,6 +53,10 @@ class MottoBotto(discord.Client):
         intents = discord.Intents(messages=True, guilds=True, reactions=True)
         super().__init__(intents=intents)
 
+    async def on_connect(self):
+        if not self.regexes and self.user:
+            self.regexes = compile_regexes(self.user.id, self.config)
+
     async def on_ready(self):
         log.info("We have logged in as {0.user}".format(self))
         if not self.regexes:
