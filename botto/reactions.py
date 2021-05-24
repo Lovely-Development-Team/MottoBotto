@@ -2,9 +2,10 @@ import asyncio
 import logging
 import random
 
-from discord import Message, Member
+from discord import Message
 
 import MottoBotto
+from food import SpecialAction
 
 log = logging.getLogger("MottoBotto").getChild("reactions")
 log.setLevel(logging.DEBUG)
@@ -48,6 +49,21 @@ async def party(botto: MottoBotto, message: Message):
     await asyncio.wait(tasks)
 
 
+async def food(botto: MottoBotto, message: Message, food_item: str):
+    reactions = botto.regexes.food.lookup[food_item]
+    for reaction in reactions:
+        if reaction == SpecialAction.echo:
+            await message.add_reaction(food_item)
+        elif reaction == SpecialAction.party:
+            await party(botto, message)
+        else:
+            await message.add_reaction(reaction)
+
+
+async def unrecognised_food(botto: MottoBotto, message: Message):
+    await message.add_reaction("😵")
+
+
 async def not_reply(botto: MottoBotto, message: Message):
     log.info(
         f"Suggestion from {message.author} was not a reply (Message ID {message.id})"
@@ -86,7 +102,7 @@ async def stored(botto: MottoBotto, message: Message, motto_message: Message):
     await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
     await message.add_reaction(botto.config["reactions"]["success"])
     if special_reactions := botto.config["special_reactions"].get(
-        str(motto_message.author.id)
+            str(motto_message.author.id)
     ):
         await message.add_reaction(random.choice(special_reactions))
     log.debug("Reaction added")
