@@ -57,7 +57,7 @@ class MottoBotto(discord.Client):
     async def on_ready(self):
         log.info("We have logged in as {0.user}".format(self))
         if not self.regexes:
-            self.regexes = compile_regexes(self.user.id)
+            self.regexes = compile_regexes(self.user.id, self.config)
 
         await self.change_presence(
             activity=discord.Activity(
@@ -327,6 +327,11 @@ class MottoBotto(discord.Client):
                 await reactions.favorite_band(self, message)
             if message.content.strip().lower() in ("i am 🐌", "i am snail"):
                 await reactions.snail(self, message)
+            if food := self.regexes.food.food_regex.search(message.content):
+                food_char = food.group(1)
+                await reactions.food(self, message, food_char)
+            elif self.regexes.food.not_food_regex.search(message.content):
+                await reactions.unrecognised_food(self, message)
             return
 
         if is_botto(message, self.user):

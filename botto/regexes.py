@@ -2,6 +2,8 @@ import re
 from dataclasses import dataclass
 from re import Pattern
 
+from food import FoodLookups
+
 
 @dataclass
 class SuggestionRegexes:
@@ -12,6 +14,7 @@ class SuggestionRegexes:
     off_topic: Pattern
     love: Pattern
     hug: Pattern
+    food: FoodLookups
     band: Pattern
     party: Pattern
 
@@ -19,7 +22,7 @@ class SuggestionRegexes:
 laugh_emojis = "[😆😂🤣]"
 
 
-def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
+def compile_regexes(bot_user_id: str, config: dict) -> SuggestionRegexes:
     self_id = rf"<@!?{bot_user_id}>"
 
     regexes = SuggestionRegexes(
@@ -53,11 +56,10 @@ def compile_regexes(bot_user_id: str) -> SuggestionRegexes:
         off_topic=re.compile(rf"off( +|\-)topic", re.IGNORECASE),
         love=re.compile(rf"I love( you,?)? {self_id}", re.IGNORECASE),
         hug=re.compile(rf"Hugs? {self_id}", re.IGNORECASE),
+        food=FoodLookups(self_id, config["food"]),
         band=re.compile(
             rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*", re.IGNORECASE
         ),
-        party=re.compile(
-            rf"(?<!third)(?<!3rd)(?:^|\s)part(?:a*y|ies)", re.IGNORECASE
-        ),
+        party=re.compile(rf"(?<!third)(?<!3rd)(?:^|\s)part(?:a*y|ies)", re.IGNORECASE),
     )
     return regexes
