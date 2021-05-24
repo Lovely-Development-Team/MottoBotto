@@ -1,9 +1,10 @@
 import re
 import os
 
+import food
+
 
 def parse(config):
-
     defaults = {
         "id": None,
         "authentication": {
@@ -60,14 +61,14 @@ def parse(config):
                 "😍",
                 "🥰",
             ],
-            "hug": ["🤗",
-                    "🫂"],
+            "hug": ["🤗", "🫂"],
             "rule_1": ["⚠️", "1️⃣", "⚠️"],
             "favorite_band": ["🇧", "🇹", "🇸"],
             "off_topic": ["😆", "🤣", "😂", "🤪"],
             "party": ["🎉", "🎂", "🎈", "🥳", "🍾", "🎁", "🎊", "🪅", "👯", "🎆", "🎇"],
             "delete_confirmed": "✅",
         },
+        "food": food.default_config,
         "special_reactions": {},
         "triggers": {
             "new_motto": [],
