@@ -113,7 +113,7 @@ default_config = {
     },
     "nausea": {"triggers": "🚬", "responses": ["🙅", "🤢"]},
     "vomit": {"triggers": ["🐛", "🐜", "🪲", "🦟", "🐞", "🦗", "🪰"], "responses": ["🤢", "🤮", "😭"]},
-    "bee": {"triggers": "🐝", "responses": ["🙅", "echo", "🌻", "😊"]},
+    "bee": {"triggers": "🐝", "responses": ["🙅", "echo", "🌻", "👉", "🍯", "😊"]},
     "baby": {"triggers": "👶", "responses": ["🙅", "😢"]},
     "alien": {"triggers": "🛸", "responses": ["👽"]},
     "zombie": {"triggers": "🧠", "responses": ["🧟"]},
