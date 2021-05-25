@@ -33,6 +33,7 @@ NUMBERS = [
     "eight",
     "nine",
 ]
+VOTE_EMOJI = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 
 
 class MottoBotto(discord.Client):
@@ -74,12 +75,35 @@ class MottoBotto(discord.Client):
         if reaction := self.config["reactions"].get(reaction_type, default):
             await message.add_reaction(reaction)
 
+    async def on_raw_reaction_remove(self, payload):
+
+        if not self.config["baby"] or payload.emoji.name not in VOTE_EMOJI:
+            return
+
+        channel = await self.fetch_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        log.info(f"Channel: {channel}")
+        log.info(f"Message: {message}")
+        log.info(f"Reactions: {message.reactions}")
+
+        if channel.name == "voting":
+            reacted_users = set()
+            for reaction in message.reactions:
+                if reaction.emoji not in VOTE_EMOJI:
+                    continue
+                users = await reaction.users().flatten()
+                reacted_users |= set(u for u in users if u != self.user)
+            if len(reacted_users) != 9:
+                await message.remove_reaction("🏁", self.user)
+
     async def on_raw_reaction_add(self, payload):
 
-        if payload.emoji.name not in (
+        vote_emoji = VOTE_EMOJI if self.config["baby"] else []
+
+        if payload.emoji.name not in [
             self.config["approval_reaction"],
             self.config["confirm_delete_reaction"],
-        ):
+        ] + vote_emoji:
             return
 
         log.info(f"Reaction received: {payload}")
@@ -90,6 +114,18 @@ class MottoBotto(discord.Client):
         log.info(f"Channel: {channel}")
         log.info(f"Message: {message}")
         log.info(f"Reactions: {message.reactions}")
+
+        if self.config["baby"] and channel.name == "voting":
+            reacted_users = set()
+            for reaction in message.reactions:
+                if reaction.emoji not in VOTE_EMOJI:
+                    continue
+                users = await reaction.users().flatten()
+                reacted_users |= set(u for u in users if u != self.user)
+            if len(reacted_users) == 9:
+                await message.add_reaction("🏁")
+            else:
+                log.info(f"Waiting for another {9 - len(reacted_users)} people to vote.")
 
         if payload.emoji.name == self.config["approval_reaction"]:
 
@@ -199,6 +235,11 @@ class MottoBotto(discord.Client):
             return
 
         channel_name = message.channel.name
+
+        if self.config["baby"] and channel_name == "voting":
+            for emoji in VOTE_EMOJI:
+                if emoji in message.content:
+                    await message.add_reaction(emoji)
 
         if (
             self.config["channels"]["include"]
