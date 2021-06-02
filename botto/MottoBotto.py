@@ -411,6 +411,7 @@ class MottoBotto(discord.Client):
         log.info(
             f"Received direct message (ID: {message.id}) from {message.author}: {message.content}"
         )
+        await message.channel.trigger_typing()
 
         message_content = message.content.lower().strip()
 
