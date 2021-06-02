@@ -181,7 +181,7 @@ class AirtableMottoStorage(MottoStorage):
         if sort:
             for idx, field in enumerate(sort):
                 params.update({"sort[{index}][field]".format(index=idx): field})
-                params.update({"sort[{index}][direction]".format(index=idx): "asc"})
+                params.update({"sort[{index}][direction]".format(index=idx): "desc"})
         offset = None
         while True:
             if offset:
