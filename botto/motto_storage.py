@@ -94,7 +94,7 @@ class MottoStorage:
         """
         raise NotImplementedError
 
-    def get_leaders(self, count=10) -> list:
+    async def get_leaders(self, count=10) -> list:
         """
         Return the Members with the top Motto counts.
         """
@@ -511,13 +511,18 @@ class AirtableMottoStorage(MottoStorage):
         )
         return [Member.from_airtable(x) async for x in members_iterator]
 
-    def get_leaders(self, count=10) -> list:
-        return [
-            Member.from_airtable(x)
-            for x in self.members.get_all(
-                sort=["-Motto Count"], filterByFormula="{Motto Count}>0"
-            )[:count]
-        ]
+    async def get_leaders(self, count=10) -> list:
+        members_iterator = self._list_all_members(
+                sort=["Motto Count"], filter_by_formula="{Motto Count}>0"
+        )
+        leaders = []
+        leaders_fetched = 0
+        async for leader in members_iterator:
+            leaders.append(Member.from_airtable(leader))
+            leaders_fetched += 1
+            if leaders_fetched >= count:
+                break
+        return leaders
 
     async def remove_unapproved_messages(self, safe_period=24):
         async with aiohttp.ClientSession() as session:
