@@ -220,17 +220,18 @@ class MottoBotto(discord.Client):
                 log.info(f"Ignoring message not pending approval.")
                 return
 
-            await self.storage.remove_all_data(payload.user_id)
+            async with channel.typing():
+                await self.storage.remove_all_data(payload.user_id)
 
-            await message.remove_reaction(
-                self.config["reactions"]["pending"], self.user
-            )
-            await message.add_reaction(self.config["reactions"]["delete_confirmed"])
-            await channel.send(
-                "All of your data has been removed. If you approve or nominate another motto in future, your user "
-                "data and any future approved mottos will be captured again. "
-            )
-            return
+                await message.remove_reaction(
+                    self.config["reactions"]["pending"], self.user
+                )
+                await message.add_reaction(self.config["reactions"]["delete_confirmed"])
+                await channel.send(
+                    "All of your data has been removed. If you approve or nominate another motto in future, your user "
+                    "data and any future approved mottos will be captured again. "
+                )
+                return
 
     async def on_message(self, message: Message):
 
