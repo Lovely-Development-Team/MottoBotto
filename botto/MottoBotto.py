@@ -456,11 +456,11 @@ You can DM me the following commands:
             return
 
         if message_content == "!leaderboard":
-            leaders = self.storage.get_leaders(count=5)
+            leaders = await self.storage.get_leaders(count=5)
 
             if not leaders:
                 await message.author.dm_channel.send(
-                    "There does't appear to be anybody on the leaderboard!"
+                    "There doesn't appear to be anybody on the leaderboard!"
                 )
                 return
 
