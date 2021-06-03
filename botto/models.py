@@ -124,7 +124,7 @@ class AirTableError(Exception):
     ) -> None:
         error_dict: dict = response_dict["error"]
         self.url = url
-        if type(response_dict) is dict:
+        if type(error_dict) is dict:
             self.error_type = error_dict.get("type")
             self.error_message = error_dict.get("message")
         else:
