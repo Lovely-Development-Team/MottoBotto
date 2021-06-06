@@ -207,7 +207,7 @@ class AirtableMottoStorage(MottoStorage):
                 (
                     base_url
                     if len(records_to_delete) > 1
-                    else self.motto_url + f"/{records_to_delete[0]}"
+                    else base_url + f"/{records_to_delete[0]}"
                 ),
                 params=(
                     {"records": records_to_delete}
