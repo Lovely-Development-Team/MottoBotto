@@ -82,7 +82,6 @@ def parse(config):
         "confirm_delete_reaction": "🧨",
         "support_channel": None,
         "watching_status": "for inspiration",
-        "baby": False,
         "minimum_random_interval_minutes": 5,
         "minimum_random_interval_minutes_per_user": 30,
     }
