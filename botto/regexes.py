@@ -6,8 +6,14 @@ from food import FoodLookups
 
 
 @dataclass
+class TagRegexes:
+    random: Pattern
+
+
+@dataclass
 class SuggestionRegexes:
     trigger: [Pattern]
+    tag: Pattern
     pokes: Pattern
     sorry: Pattern
     apologising: Pattern
@@ -17,6 +23,7 @@ class SuggestionRegexes:
     food: FoodLookups
     band: Pattern
     party: Pattern
+    tags: TagRegexes
 
 
 laugh_emojis = "[😆😂🤣]"
@@ -27,6 +34,7 @@ def compile_regexes(bot_user_id: str, config: dict) -> SuggestionRegexes:
 
     regexes = SuggestionRegexes(
         trigger=[re.compile(rf"^{self_id}")],
+        tag=re.compile(rf"^{self_id} (.*)"),
         pokes=re.compile(rf"pokes? {self_id}", re.IGNORECASE),
         sorry=re.compile(rf"sorry,? {self_id}", re.IGNORECASE),
         apologising=re.compile(
@@ -61,5 +69,8 @@ def compile_regexes(bot_user_id: str, config: dict) -> SuggestionRegexes:
             rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*", re.IGNORECASE
         ),
         party=re.compile(rf"(?<!third)(?<!3rd)(?:^|\s)part(?:a*y|ies)", re.IGNORECASE),
+        tags=TagRegexes(
+            random=re.compile(r"^!random\s*(.*)"),
+        ),
     )
     return regexes

@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import random
+import datetime
 import re
 from typing import Optional
 
@@ -50,6 +51,13 @@ class MottoBotto(discord.Client):
         log.info("Rules: %s", self.config["rules"])
 
         self.regexes: Optional[SuggestionRegexes] = None
+
+        self._cache = {
+            "random": {
+                "users": {},
+                "last": None,
+            },
+        }
 
         intents = discord.Intents(messages=True, guilds=True, reactions=True)
         super().__init__(intents=intents)
@@ -293,6 +301,66 @@ class MottoBotto(discord.Client):
             return False
         return True
 
+    def is_random_request_allowed(self, user):
+
+        now = datetime.datetime.now()
+        oldest = datetime.datetime(1970, 1, 1, 0, 0, 0)
+
+        last_random = self._cache["random"]["last"] or oldest
+        allowed = last_random + datetime.timedelta(minutes=self.config["minimum_random_interval_minutes"])
+        if allowed < now:
+
+            last_random_for_user = self._cache["random"]["users"].get(user, oldest)
+            allowed = last_random_for_user + datetime.timedelta(minutes=self.config["minimum_random_interval_minutes_per_user"])
+            if allowed < now:
+
+                self._cache["random"]["users"][user] = now
+                self._cache["random"]["last"] = now
+                return True
+
+            else:
+
+                log.info(f"{user} not allowed to request a random motto until {allowed}")
+                return False
+
+        else:
+            log.info(f"Nobody allowed to request a random motto until {allowed}")
+            return False
+
+    async def process_tag(self, message: Message, content: list):
+
+        log.info(f"Tagged message incoming: {message.content} / {content}")
+
+        if not content:
+            await reactions.wave(self, message)
+            return
+
+        content = content[0].strip()
+
+        if partial := self.regexes.tags.random.findall(content):
+
+            log.info(f"Call to !random with regex: {partial!r} from {message.author}")
+
+            if not self.is_random_request_allowed(message.author):
+                await reactions.rate_limit(self, message)
+                return
+
+            partial = partial[0]
+            try:
+                partial_regex = re.compile(partial, re.IGNORECASE)
+            except re.error:
+                partial_regex = None
+
+            async with message.channel.typing():
+                motto = await self.storage.get_random_motto(search=partial, search_regex=partial_regex)
+                log.info(f"Got random motto! {motto}")
+                if not motto:
+                    await reactions.shrug(self, message)
+                else:
+                    await message.reply(f"{motto.motto}—{motto.member.display_name}")
+
+        return
+
     @property
     def triggers(self):
         triggers = self.config["triggers"]["new_motto"]
@@ -301,6 +369,10 @@ class MottoBotto(discord.Client):
         return triggers
 
     async def process_suggestion(self, message: Message):
+
+        if (result := self.regexes.tag.findall(message.content)) and not message.reference:
+            await self.process_tag(message, result)
+            return
 
         trigger = None
         for t in self.triggers:
@@ -426,6 +498,8 @@ class MottoBotto(discord.Client):
             help_message = f"""
 Reply to a great motto in the supported channels with {trigger} to tell me about it! You can nominate a section of a message with \"{trigger} <excerpt>\". (Note: you can't nominate yourself.)
 
+To get inspired, tag me in a supported channel with `@{self.user.display_name} !random`. I'll reply with a hand-selected motto from our database. You can only do this once every {self.config["minimum_random_interval_minutes_per_user"]} minutes, though, and others will have to wait {self.config["minimum_random_interval_minutes"]} minutes before they can do it too.
+
 You can DM me the following commands:
 `!random`: Get a random motto.
 `!leaderboard`: Display the top motto authors.
@@ -503,14 +577,27 @@ You can DM me the following commands:
             await message.author.dm_channel.send(response)
             return
 
-        if message_content in ("!hitmeup", "!random", "!inspireme"):
-            random_motto = await self.storage.get_random_motto()
-            if not random_motto:
-                await message.author.dm_channel.send("Sorry mate, I'm all out.")
-                return
-            await message.author.dm_channel.send(
-                f"{random_motto.motto}—{random_motto.member.display_name}"
-            )
+        if message_content.startswith("!random"):
+
+            partial = None
+            partial_regex = None
+
+            parts = message_content.split(None, 1)
+            if len(parts) > 1:
+                partial = parts[-1]
+                try:
+                    partial_regex = re.compile(partial, re.IGNORECASE)
+                except re.error:
+                    partial_regex = None
+
+            async with message.author.dm_channel.typing():
+                random_motto = await self.storage.get_random_motto(search=partial, search_regex=partial_regex)
+                if not random_motto:
+                    await message.author.dm_channel.send("Sorry mate, I'm all out.")
+                    return
+                await message.author.dm_channel.send(
+                    f"{random_motto.motto}—{random_motto.member.display_name}"
+                )
             return
 
         if message_content == "!link" and self.config["leaderboard_link"] is not None:

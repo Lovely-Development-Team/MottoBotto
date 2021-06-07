@@ -40,7 +40,7 @@ class MottoStorage:
         """
         raise NotImplementedError
 
-    async def get_random_motto(self) -> Optional[Motto]:
+    async def get_random_motto(self, search: str) -> Optional[Motto]:
         """
         Return a random approved Motto.
         """
@@ -392,14 +392,24 @@ class AirtableMottoStorage(MottoStorage):
             return
         return Motto.from_airtable(motto_record[0])
 
-    async def get_random_motto(self) -> Optional[Motto]:
+    async def get_random_motto(self, search=None, search_regex=None) -> Optional[Motto]:
+
+        filter_func = lambda x: x
+
+        if search_regex:
+            filter_func = lambda x: search_regex.search(x["fields"]["Motto"])
+        elif search:
+            fitler_func = lambda x: search.lower() in x["fields"]["Motto"].lower()
+
         try:
             motto = Motto.from_airtable(
-                random.choice(
+                random.choice([
+                    m for m in
                     await self._list_mottos(
                         filter_by_formula="{Approved by Author}=TRUE()"
                     )
-                )
+                    if filter_func(m)
+                ])
             )
         except IndexError:
             return
