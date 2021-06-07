@@ -24,6 +24,21 @@ async def snail(botto: MottoBotto, message: Message):
     await message.add_reaction("🐌")
 
 
+async def rate_limit(botto: MottoBotto, message: Message):
+    log.info(f"Rate limit response: {message.author}")
+    await message.add_reaction("✋")
+
+
+async def wave(botto: MottoBotto, message: Message):
+    log.info(f"Wave from: {message.author}")
+    await message.add_reaction("👋")
+
+
+async def shrug(botto: MottoBotto, message: Message):
+    log.info(f"Shrug to: {message.author}")
+    await message.add_reaction("🤷")
+
+
 async def poke(botto: MottoBotto, message: Message):
     log.info(f"Poke from: {message.author}")
     await message.add_reaction(random.choice(botto.config["reactions"]["poke"]))
