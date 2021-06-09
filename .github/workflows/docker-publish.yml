@@ -32,7 +32,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: /tmp/docker-save
-          key: docker-save-${{ hashFiles('Dockerfile') }}
+          key: docker-save-motto-${{ hashFiles('Dockerfile') }}
 
       - name: Load cached image into Docker
         run: docker load -i /tmp/docker-save/snapshot.tar || true
@@ -44,7 +44,7 @@ jobs:
             docker-compose --file docker-compose.test.yml build
             docker-compose --file docker-compose.test.yml run sut
           else
-            docker build . -t baby-botto --cache-from=baby-botto-cache
+            docker build . -t $IMAGE_NAME --cache-from=baby-botto-cache
           fi
 
       - name: Save cache of Docker image
@@ -69,19 +69,19 @@ jobs:
       packages: write
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Load docker image from cache
         id: cache-docker
         uses: actions/cache@v1
         with:
           path: /tmp/docker-save
-          key: docker-save-${{ hashFiles('Dockerfile') }}
+          key: docker-save-motto-${{ hashFiles('Dockerfile') }}
 
       - name: Load cached image into Docker
         run: docker load -i /tmp/docker-save/snapshot.tar || true
         if: steps.cache-docker.outputs.cache-hit == 'true'
-
-      - name: Checkout code
-        uses: actions/checkout@v2
 
       - name: Build image
         run: docker build . --file Dockerfile --tag $IMAGE_NAME --cache-from=baby-botto-cache
@@ -110,3 +110,46 @@ jobs:
 
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
+
+  deploy:
+    # Ensure test job passes before pushing image.
+    needs: push
+
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_run'
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set env
+        run: echo "RELEASE_VERSION=`git describe --tags`" >> $GITHUB_ENV
+        continue-on-error: true
+
+      - name: Start MottoBotto
+        uses: appleboy/ssh-action@v0.1.4
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USERNAME: ${{ secrets.DEPLOY_USERNAME }}
+          PASSPHRASE: ${{ secrets.DEPLOY_SSHKEY_PASSPHRASE }}
+          KEY: ${{ secrets.DEPLOY_SSHKEY }}
+          SCRIPT: >
+            docker pull ghcr.io/lovely-development-team/$IMAGE_NAME:latest &&
+            docker stop baby_botto || true &&
+            docker rm baby_botto || true &&
+            docker run -d -t --restart unless-stopped
+            -e MOTTOBOTTO_DISCORD_TOKEN='${{ secrets.DISCORD_TOKEN }}'
+            -e MOTTOBOTTO_AIRTABLE_BASE='${{ secrets.AIRTABLE_BASE }}'
+            -e MOTTOBOTTO_AIRTABLE_KEY='${{ secrets.AIRTABLE_KEY }}'
+            -e MOTTOBOTTO_CHANNELS='${{ secrets.CHANNELS }}'
+            -e MOTTOBOTTO_TRIGGERS='${{ secrets.TRIGGERS }}'
+            -e MOTTOBOTTO_ID='Capys-hosted BabyBotto'
+            -e MOTTOBOTTO_SHOULD_REPLY='${{ secrets.SHOULD_REPLY }}'
+            -e MOTTOBOTTO_VERSION='${{ env.RELEASE_VERSION }}'
+            --name baby_botto ghcr.io/lovely-development-team/$IMAGE_NAME:latest
