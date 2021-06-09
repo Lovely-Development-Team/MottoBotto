@@ -17,7 +17,10 @@ log = logging.getLogger("MottoBotto")
 try:
     config_path = os.getenv("MOTTOBOTTO_CONFIG", "config.json")
     log.debug(f"Config path: %s", config_path)
-    config = parse(json.load(open(config_path)))
+    config_to_parse = {}
+    if os.path.isfile(config_path):
+        config_to_parse = json.load(open(config_path))
+    config = parse(config_to_parse)
 except (IOError, OSError, ValueError) as err:
     log.error(f"Config file invalid: {err}")
     exit(1)
