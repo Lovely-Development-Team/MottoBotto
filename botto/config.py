@@ -1,7 +1,30 @@
+import base64
+import binascii
+import json
+import logging
 import re
 import os
 
 import food
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+
+
+def decode_base64_env(key: str):
+    if meals := os.getenv(key):
+        decoded = None
+        try:
+            decoded = base64.b64decode(meals)
+            return json.loads(decoded)
+        except binascii.Error:
+            log.error(f"Unable to decode base64 {key} config", exc_info=True)
+            raise
+        except json.JSONDecodeError as error:
+            log.error(f"Unable to parse decoded {key} config: {error}", exc_info=True)
+            if decoded:
+                log.debug(f"Decoded config file: {decoded}")
+            raise
 
 
 def parse(config):
@@ -92,6 +115,8 @@ def parse(config):
         else:
             defaults[key] = config.get(key, defaults[key])
 
+    if triggers := decode_base64_env("MOTTOBOTTO_TRIGGERS"):
+        defaults["triggers"] = triggers
     # Compile trigger regexes
     for key, triggers in defaults["triggers"].items():
         defaults["triggers"][key] = [
@@ -112,5 +137,14 @@ def parse(config):
 
     if token := os.getenv("MOTTOBOTTO_AIRTABLE_BASE"):
         defaults["authentication"]["airtable_base"] = token
+
+    if channels := os.getenv("MOTTOBOTTO_CHANNELS"):
+        defaults["channels"] = channels
+
+    if id := os.getenv("MOTTOBOTTO_ID"):
+        defaults["id"] = id
+
+    if should_reply := os.getenv("MOTTOBOTTO_SHOULD_REPLY"):
+        defaults["should_reply"] = bool(should_reply)
 
     return defaults
