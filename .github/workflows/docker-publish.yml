@@ -140,7 +140,7 @@ jobs:
           PASSPHRASE: ${{ secrets.DEPLOY_SSHKEY_PASSPHRASE }}
           KEY: ${{ secrets.DEPLOY_SSHKEY }}
           SCRIPT: >
-            docker pull ghcr.io/lovely-development-team/$IMAGE_NAME:latest &&
+            docker pull ghcr.io/lovely-development-team/${{ env.IMAGE_NAME }}:latest &&
             docker stop baby_botto || true &&
             docker rm baby_botto || true &&
             docker run -d -t --restart unless-stopped
@@ -152,4 +152,4 @@ jobs:
             -e MOTTOBOTTO_ID='Capys-hosted BabyBotto'
             -e MOTTOBOTTO_SHOULD_REPLY='${{ secrets.SHOULD_REPLY }}'
             -e MOTTOBOTTO_VERSION='${{ env.RELEASE_VERSION }}'
-            --name baby_botto ghcr.io/lovely-development-team/$IMAGE_NAME:latest
+            --name baby_botto ghcr.io/lovely-development-team/${{ env.IMAGE_NAME }}:latest
