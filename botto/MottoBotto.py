@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import random
 import datetime
 import re
@@ -506,7 +507,7 @@ You can DM me the following commands:
             return
 
         if message_content == "!version":
-            git_version = "🤷"
+            git_version = os.getenv("MOTTOBOTTO_VERSION", "🤷")
             try:
                 git_version = (
                     subprocess.check_output(["git", "describe", "--tags"])
