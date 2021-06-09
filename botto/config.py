@@ -145,6 +145,6 @@ def parse(config):
         defaults["id"] = id
 
     if should_reply := os.getenv("MOTTOBOTTO_SHOULD_REPLY"):
-        defaults["should_reply"] = bool(should_reply)
+        defaults["should_reply"] = should_reply.lower() == "true"
 
     return defaults
