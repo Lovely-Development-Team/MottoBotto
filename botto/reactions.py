@@ -65,14 +65,21 @@ async def party(botto: MottoBotto, message: Message):
 
 
 async def food(botto: MottoBotto, message: Message, food_item: str):
-    reactions = botto.regexes.food.lookup[food_item]
-    for reaction in reactions:
-        if reaction == SpecialAction.echo:
-            await message.add_reaction(food_item)
-        elif reaction == SpecialAction.party:
-            await party(botto, message)
-        else:
-            await message.add_reaction(reaction)
+    try:
+        reactions = botto.regexes.food.lookup[food_item]
+        for reaction in reactions:
+            if reaction == SpecialAction.echo:
+                await message.add_reaction(food_item)
+            elif reaction == SpecialAction.party:
+                await party(botto, message)
+            else:
+                await message.add_reaction(reaction)
+    except KeyError:
+        log.error(
+            f"Failed to find food item using key {food_item}. "
+            f"Message content: '{message.content.encode('unicode_escape')}'",
+            exc_info=True,
+        )
 
 
 async def unrecognised_food(botto: MottoBotto, message: Message):
@@ -117,7 +124,7 @@ async def stored(botto: MottoBotto, message: Message, motto_message: Message):
     await message.remove_reaction(botto.config["reactions"]["pending"], botto.user)
     await message.add_reaction(botto.config["reactions"]["success"])
     if special_reactions := botto.config["special_reactions"].get(
-            str(motto_message.author.id)
+        str(motto_message.author.id)
     ):
         await message.add_reaction(random.choice(special_reactions))
     log.debug("Reaction added")
