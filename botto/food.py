@@ -152,15 +152,15 @@ class FoodLookups:
         self.food_chars = "".join(self.lookup.keys())
         self.food_regex = re.compile(
             r"""(?:feed|pour)?s?\s{self_id}
-                    .*
-                    ([{chars}])""".format(
+                    .*?
+                    ([{chars}])(?:\ufe0f)?""".format(
                 self_id=self_id, chars=self.food_chars
             ),
             re.IGNORECASE | re.VERBOSE | re.UNICODE,
         )
         self.not_food_regex = re.compile(
             r"""(?:feed|pour)?s?\s{self_id}
-                    .*
+                    .*?
                     ([{chars}])""".format(
                 self_id=self_id, chars="".join(UNICODE_EMOJI["en"].keys())
             ),
