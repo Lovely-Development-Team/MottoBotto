@@ -112,17 +112,22 @@ default_config = {
         "responses": ["🙅", "😨"],
     },
     "nausea": {"triggers": "🚬", "responses": ["🙅", "🤢"]},
-    "vomit": {"triggers": ["🐛", "🐜", "🪲", "🦟", "🐞", "🦗", "🪰"], "responses": ["🤢", "🤮", "😭"]},
+    "vomit": {
+        "triggers": ["🐛", "🐜", "🪲", "🦟", "🐞", "🦗", "🪰"],
+        "responses": ["🤢", "🤮", "😭"],
+    },
     "bee": {"triggers": "🐝", "responses": ["🙅", "echo", "🌻", "👉", "🍯", "😊"]},
     "baby": {"triggers": "👶", "responses": ["🙅", "😢"]},
     "alien": {"triggers": "🛸", "responses": ["👽"]},
     "zombie": {"triggers": "🧠", "responses": ["🧟"]},
     "vampire": {"triggers": ["🩸", "🆎", "🅱️", "🅾️", "🅰️"], "responses": ["🧛"]},
+    "robot": {"triggers": ["⚙"], "responses": ["🤖"]},
+    "nazar": {"triggers": ["🧿"], "responses": ["👀"]},
     "spicy": {"triggers": "🌶️", "responses": ["🥵"]},
     "ice": {"triggers": "🧊", "responses": ["🥶"]},
     "bone": {"triggers": "🦴", "responses": ["🐶"]},
     "celebrate": {"triggers": "🎂", "responses": ["😋", "party"]},
-    "money": {"triggers": ["💸", "💰", "💵"], "responses": ["🤑"]}
+    "money": {"triggers": ["💸", "💰", "💵"], "responses": ["🤑"]},
 }
 
 
@@ -166,4 +171,6 @@ class FoodLookups:
             ),
             re.IGNORECASE | re.VERBOSE | re.UNICODE,
         )
-        log.info(f"Loaded {len(self.lookup)} types of food in {len(food_config)} categories")
+        log.info(
+            f"Loaded {len(self.lookup)} types of food in {len(food_config)} categories"
+        )
