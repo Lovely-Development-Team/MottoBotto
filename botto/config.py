@@ -138,7 +138,7 @@ def parse(config):
     if token := os.getenv("MOTTOBOTTO_AIRTABLE_BASE"):
         defaults["authentication"]["airtable_base"] = token
 
-    if channels := os.getenv("MOTTOBOTTO_CHANNELS"):
+    if channels := decode_base64_env("MOTTOBOTTO_CHANNELS"):
         defaults["channels"] = channels
 
     if id := os.getenv("MOTTOBOTTO_ID"):
