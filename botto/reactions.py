@@ -64,6 +64,11 @@ async def party(botto: MottoBotto, message: Message):
     await asyncio.wait(tasks)
 
 
+async def cow(botto: MottoBotto, message: Message):
+    log.info(f"Cow from: {message.author}")
+    await message.add_reaction(random.choice(botto.config["reactions"]["cow"]))
+
+
 async def food(botto: MottoBotto, message: Message, food_item: str):
     try:
         reactions = botto.regexes.food.lookup[food_item]
