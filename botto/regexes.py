@@ -23,6 +23,7 @@ class SuggestionRegexes:
     food: FoodLookups
     band: Pattern
     party: Pattern
+    cow: Pattern
     tags: TagRegexes
 
 
@@ -31,6 +32,8 @@ laugh_emojis = "[😆😂🤣]"
 
 def compile_regexes(bot_user_id: str, config: dict) -> SuggestionRegexes:
     self_id = rf"<@!?{bot_user_id}>"
+
+    line_break_matcher = "[\t\n\r\v]"
 
     regexes = SuggestionRegexes(
         trigger=[re.compile(rf"^{self_id}")],
@@ -69,6 +72,19 @@ def compile_regexes(bot_user_id: str, config: dict) -> SuggestionRegexes:
             rf"What('|’)?s +your +fav(ou?rite)? +band +{self_id} ?\?*", re.IGNORECASE
         ),
         party=re.compile(rf"(?<!third)(?<!3rd)(?:^|\s)part(?:a*y|ies)", re.IGNORECASE),
+        cow=re.compile(
+            r"""
+            ^(?:
+                c+{lb}*o+{lb}*w+{lb}*s*
+                |
+                m+{lb}*o{lb}*o+{lb}?
+            )
+            [\s\t\n\r\v]*
+            $""".format(
+                lb=line_break_matcher
+            ),
+            re.IGNORECASE | re.VERBOSE,
+        ),
         tags=TagRegexes(
             random=re.compile(r"^!random\s*(.*)"),
         ),

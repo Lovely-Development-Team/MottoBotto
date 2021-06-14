@@ -354,6 +354,8 @@ class MottoBotto(discord.Client):
                 await reactions.favorite_band(self, message)
             if message.content.strip().lower() in ("i am 🐌", "i am snail"):
                 await reactions.snail(self, message)
+            if self.regexes.cow.search(message.content):
+                await reactions.cow(self, message)
             if food := self.regexes.food.food_regex.search(message.content):
                 food_char = food.group(1)
                 await reactions.food(self, message, food_char)
