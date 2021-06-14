@@ -215,12 +215,12 @@ class MottoBotto(discord.Client):
         channel_name = message.channel.name
 
         if (
-            self.config["channels"]["include"]
+            self.config["channels"].get("include")
             and channel_name not in self.config["channels"]["include"]
         ):
             return
         else:
-            if channel_name in self.config["channels"]["exclude"]:
+            if channel_name in self.config["channels"].get("exclude", []):
                 return
 
         await self.process_suggestion(message)
