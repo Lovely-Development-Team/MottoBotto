@@ -126,7 +126,7 @@ def parse(config):
 
     # Compile rule regexes
     for key, rules in defaults["rules"].items():
-        defaults["rules"][key] = [re.compile(r, re.MULTILINE) for r in rules]
+        defaults["rules"][key] = [re.compile(r, re.DOTALL) for r in rules]
 
     # Environment variables override config files
 
