@@ -341,27 +341,8 @@ class MottoBotto(discord.Client):
                 break
 
         if not trigger:
-
-            if self.regexes.pokes.search(message.content):
-                await reactions.poke(self, message)
-            if self.regexes.sorry.search(message.content):
-                await reactions.love(self, message)
-            if self.regexes.love.search(message.content):
-                await reactions.love(self, message)
-            if self.regexes.hug.search(message.content):
-                await reactions.hug(self, message)
-            if self.regexes.band.search(message.content):
-                await reactions.favorite_band(self, message)
             if message.content.strip().lower() in ("i am 🐌", "i am snail"):
                 await reactions.snail(self, message)
-            if self.regexes.cow.search(message.content):
-                await reactions.cow(self, message)
-            if food := self.regexes.food.food_regex.search(message.content):
-                food_char = food.group(1)
-                await reactions.food(self, message, food_char)
-            elif self.regexes.food.not_food_regex.search(message.content):
-                await reactions.unrecognised_food(self, message)
-
             return
 
         if is_botto(message, self.user):
