@@ -294,31 +294,6 @@ class MottoBotto(discord.Client):
         if not content:
             await reactions.wave(self, message)
             return
-
-        content = content[0].strip()
-
-        if partial := self.regexes.tags.random.findall(content):
-
-            log.info(f"Call to !random with regex: {partial!r} from {message.author}")
-
-            if not self.is_random_request_allowed(message.author):
-                await reactions.rate_limit(self, message)
-                return
-
-            partial = partial[0]
-            try:
-                partial_regex = re.compile(partial, re.IGNORECASE)
-            except re.error:
-                partial_regex = None
-
-            async with message.channel.typing():
-                motto = await self.storage.get_random_motto(search=partial, search_regex=partial_regex)
-                log.info(f"Got random motto! {motto}")
-                if not motto:
-                    await reactions.shrug(self, message)
-                else:
-                    await message.reply(f"{motto.motto}—{motto.member.display_name}")
-
         return
 
     @property
@@ -341,27 +316,8 @@ class MottoBotto(discord.Client):
                 break
 
         if not trigger:
-
-            if self.regexes.pokes.search(message.content):
-                await reactions.poke(self, message)
-            if self.regexes.sorry.search(message.content):
-                await reactions.love(self, message)
-            if self.regexes.love.search(message.content):
-                await reactions.love(self, message)
-            if self.regexes.hug.search(message.content):
-                await reactions.hug(self, message)
-            if self.regexes.band.search(message.content):
-                await reactions.favorite_band(self, message)
             if message.content.strip().lower() in ("i am 🐌", "i am snail"):
                 await reactions.snail(self, message)
-            if self.regexes.cow.search(message.content):
-                await reactions.cow(self, message)
-            if food := self.regexes.food.food_regex.search(message.content):
-                food_char = food.group(1)
-                await reactions.food(self, message, food_char)
-            elif self.regexes.food.not_food_regex.search(message.content):
-                await reactions.unrecognised_food(self, message)
-
             return
 
         if is_botto(message, self.user):
