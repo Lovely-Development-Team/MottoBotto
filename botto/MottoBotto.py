@@ -294,31 +294,6 @@ class MottoBotto(discord.Client):
         if not content:
             await reactions.wave(self, message)
             return
-
-        content = content[0].strip()
-
-        if partial := self.regexes.tags.random.findall(content):
-
-            log.info(f"Call to !random with regex: {partial!r} from {message.author}")
-
-            if not self.is_random_request_allowed(message.author):
-                await reactions.rate_limit(self, message)
-                return
-
-            partial = partial[0]
-            try:
-                partial_regex = re.compile(partial, re.IGNORECASE)
-            except re.error:
-                partial_regex = None
-
-            async with message.channel.typing():
-                motto = await self.storage.get_random_motto(search=partial, search_regex=partial_regex)
-                log.info(f"Got random motto! {motto}")
-                if not motto:
-                    await reactions.shrug(self, message)
-                else:
-                    await message.reply(f"{motto.motto}—{motto.member.display_name}")
-
         return
 
     @property
