@@ -505,7 +505,8 @@ You can DM me the following commands:
                     await message.author.dm_channel.send("Sorry mate, I'm all out.")
                     return
                 await message.author.dm_channel.send(
-                    f"{random_motto.motto}—{random_motto.member.display_name}"
+                    f"> {'> '.join(random_motto.motto.splitlines())}\n"
+                    f"—{random_motto.member.display_name}"
                 )
             return
 
