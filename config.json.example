@@ -22,6 +22,9 @@
             "Accurate[.,!] New motto\\?"
         ]
     },
+    "special_reactions": {
+        "{DISCORD ID}": ["🦔"]
+    },
     "should_reply": false,
     "delete_unapproved_after_hours": 24
 }
