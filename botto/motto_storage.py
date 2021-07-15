@@ -523,7 +523,7 @@ class AirtableMottoStorage(MottoStorage):
 
     async def get_leaders(self, count=10) -> list:
         members_iterator = self._list_all_members(
-                sort=["Motto Count"], filter_by_formula="{Motto Count}>0"
+                sort=["Total Points"], filter_by_formula="{Motto Count}>0"
         )
         leaders = []
         leaders_fetched = 0
