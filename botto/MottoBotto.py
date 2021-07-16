@@ -250,15 +250,23 @@ class MottoBotto(discord.Client):
         )
         return bool(matching_mottos)
 
-    def is_valid_message(self, message: Message) -> bool:
-        if (
-            not all(r.search(message.content) for r in self.config["rules"]["matching"])
-            or any(r.search(message.content) for r in self.config["rules"]["excluding"])
-            or any(
-                r.match(message.content) for r in self.config["triggers"]["new_motto"]
-            )
-        ):
-            return False
+    def is_valid_message(self, message: str) -> bool:
+
+        for regex in self.config["rules"]["matching"]:
+            if not regex.match(message):
+                log.info(f"Message does not match required regex: {regex}")
+                return False
+
+        for regex in self.config["rules"]["excluding"]:
+            if regex.search(message):
+                log.info(f"Message matches required exclusion regex: {regex}")
+                return False
+
+        for regex in self.config["triggers"]["new_motto"]:
+            if regex.match(message):
+                log.info(f"Message matches required exclusion regex: {regex}")
+                return False
+
         return True
 
     def is_random_request_allowed(self, user):
@@ -330,14 +338,6 @@ class MottoBotto(discord.Client):
 
         motto_message: Message = message.reference.resolved
 
-        if not self.is_valid_message(motto_message):
-            await reactions.invalid(self, message)
-            return
-
-        if motto_message.author == message.author:
-            await reactions.fishing(self, message)
-            return
-
         log.info(f'Motto suggestion incoming: "{motto_message.content}"')
 
         trigger_message_content = self.clean_trigger_message(trigger, message.content)
@@ -346,6 +346,14 @@ class MottoBotto(discord.Client):
         if trigger_message_content and trigger_message_content not in motto_message.content:
             log.info(f"Quoted exerpt {trigger_message_content!r} not found in existing message {motto_message.content!r}")
             await reactions.not_reply(self, message)
+            return
+
+        if not self.is_valid_message(trigger_message_content or motto_message.content):
+            await reactions.invalid(self, message)
+            return
+
+        if motto_message.author == message.author:
+            await reactions.fishing(self, message)
             return
 
         if await self.is_repeat_message(motto_message):
