@@ -131,7 +131,9 @@ async def stored(botto: MottoBotto, message: Message, motto_message: Message):
     if special_reactions := botto.config["special_reactions"].get(
         str(motto_message.author.id)
     ):
-        await message.add_reaction(random.choice(special_reactions))
+        chosen_special_reactions = random.choice(special_reactions)
+        log.info(f"Special reaction {chosen_special_reactions} triggered for motto from {motto_message.author.id}")
+        await message.add_reaction(chosen_special_reactions)
     log.debug("Reaction added")
     if botto.config["should_reply"]:
         await message.reply(f'"{motto_message.content}" will be considered!')
