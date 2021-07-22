@@ -4,11 +4,14 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 ## Default Usage TLDR
 
 * Nominate somebody else's message as a potential motto with `@MottoBotto` in a reply to the message.
+* Nominate an extract of someone else's message with `@MottoBotto <excerpt>` in a reply to the message
 
 * Approve somebody's nomination of your message with an emoji reaction.
 * View the [list of approved mottos and the leaderboard](https://mottobotto.com/).
 * Change your leaderboard emoji with a direct message to MottoBotto of `!emoji <new-emoji>`.
 * Get a link to the leaderboard with a direct message to MottoBotto of `!link`.
+* Get a random motto from the leaderboard with a direct message to MottoBotto of `!random`.
+* Get the top motto authors with a direct message to MottoBotto of `!leaderboard`
 * Delete all your data from the leaderboard with a direct message to MottoBotto of `!delete`.
 * Send `!help` as a direct message to MottoBotto to get a list of possible commands.
 
@@ -16,7 +19,7 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 ## Interacting with MottoBotto
 
 
-To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted pending author approval, rejected, invalid, or previously nominated. Mottos must be manually approved by moderators, and will then be available for display, along with a leaderboard for motto-makers, in [a simple web view](https://mottobotto.com/).
+To nominate a motto for consideration, reply to the Discord message with one of MottoBotto's trigger phrases. The default triggers can be found in the [section below](#motto-nomination). MottoBotto will respond to your message with an emoji reaction indicating whether the nomination was accepted pending author approval, rejected, invalid, or previously nominated. Mottos must be manually approved by moderators, and will then be available for display, along with a leaderboard for motto-makers, in [a simple web view](https://mottobotto.com/).  You can nominate just part of a message by including a quote after the trigger phrase.
 
 
 ### Rules MottoBotto follows when accepting mottos
@@ -31,6 +34,8 @@ Mottos that are considered valid by MottoBotto are:
 Any suggested motto that doesn't conform to these rules will be rejected.
 
 MottoBotto will also reject any nomination that is a statement made by either yourself or MottoBotto.
+
+When nominating an excerpt of a message, MottoBotto checks the excerpt is a valid quote at both the time of nomination and before adding the motto to the database.
 
 ### Rules humans should follow when suggesting mottos
 
@@ -57,7 +62,7 @@ MottoBotto will respond with a reaction indicating a successful update or a prob
 
 ### Viewing the leaderboard
 
-If a leaderboard is configured for MottoBotto, you can retrieve a link to it by sending the `!link` command as a direct message to MottoBotto.
+If a leaderboard is configured for MottoBotto, you can retrieve a link to it by sending the `!link` command as a direct message to MottoBotto.  You can also see the current top five motto authors by using the `!leaderboard` command in a direct message.
 
 ### Deleting your data
 
@@ -153,7 +158,7 @@ The trigger phrases detailed below are the defaults.  Any others for each trigge
 
 #### Motto Nomination
 
-`@MottoBotto`
+`@MottoBotto` or `@MottoBotto <excerpt>`.  Optionally the excerpt can be surrounded by double quotes `"<excerpt>"`.
 
 MottoBotto will always react with emoji, but can also be configured to react with a text message response. The defaults for both are as follows, although the emoji reactions can be changed in configuration:
 * ⏳ MottoBotto is waiting for approval from the motto's author before adding the motto to the leaderboard. There is currently no corresponding text reply for this situation.
