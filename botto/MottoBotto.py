@@ -413,7 +413,7 @@ class MottoBotto(discord.Client):
             )
 
             help_message = f"""
-Reply to a great motto in the supported channels with {trigger} to tell me about it! You can nominate a section of a message with \"{trigger} <excerpt>\". (Note: you can't nominate yourself.)
+Reply to a great motto in the supported channels with `{trigger}` to tell me about it! You can nominate a section of a message with `{trigger} <excerpt>`. (Note: you can't nominate yourself.)
 
 To get inspired, tag me in a supported channel with `@{self.user.display_name} !random`. I'll reply with a hand-selected motto from our database. You can only do this once every {self.config["minimum_random_interval_minutes_per_user"]} minutes, though, and others will have to wait {self.config["minimum_random_interval_minutes"]} minutes before they can do it too.
 
