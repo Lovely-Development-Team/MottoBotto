@@ -4,7 +4,7 @@ MottoBotto is a configurable Discord bot with a penchant for mottos and words to
 ## Default Usage TLDR
 
 * Nominate somebody else's message as a potential motto with `@MottoBotto` in a reply to the message.
-* Nominate an extract of someone else's message with `@MottoBotto <excerpt>` in a reply to the message
+* Nominate an extract of someone else's message with `@MottoBotto <excerpt>` in a reply to the message.
 
 * Approve somebody's nomination of your message with an emoji reaction.
 * View the [list of approved mottos and the leaderboard](https://mottobotto.com/).
