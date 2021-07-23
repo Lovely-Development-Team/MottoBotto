@@ -312,11 +312,6 @@ class MottoBotto(discord.Client):
         return triggers
 
     async def process_suggestion(self, message: Message):
-
-        if (result := self.regexes.tag.findall(message.content)) and not message.reference:
-            await self.process_tag(message, result)
-            return
-
         trigger = None
         for t in self.triggers:
             if t.match(message.content):
