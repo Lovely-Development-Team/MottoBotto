@@ -460,7 +460,7 @@ You can DM me the following commands:
                     else position
                 )
                 plural = "s" if leader.motto_count > 1 else ""
-                leaders_message = f"{leaders_message}:{NUMBERS[pos]}: <@{leader.discord_id}> {leader.display_name} ({leader.motto_count} motto{plural})\n"
+                leaders_message = f"{leaders_message}:{NUMBERS[pos]}: <@{leader.discord_id}> {leader.display_name} ({leader.motto_count} motto{plural}, {leader.nominated_motto_count} nominated)\n"
                 if previous_count != leader.motto_count:
                     previous_count = leader.motto_count
                     previous_position = position
