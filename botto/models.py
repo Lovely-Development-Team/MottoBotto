@@ -89,6 +89,8 @@ class Member(Model):
         "nickname",
         "use_nickname",
         "motto_count",
+        "nominated_motto_count",
+        "total_score",
         "bot_id",
         "mottos",
     ]
@@ -105,6 +107,8 @@ class Member(Model):
             nickname=fields.get("Nickname"),
             use_nickname=fields.get("Use Nickname", False),
             motto_count=fields.get("Motto Count", 0),
+            nominated_motto_count=fields.get("Nominated Motto Count", 0),
+            total_score=fields.get("Total Score", 0),
             bot_id=fields.get("Bot ID", None),
             mottos=fields.get("Mottos", []),
         )
