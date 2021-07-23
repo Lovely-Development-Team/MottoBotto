@@ -231,7 +231,7 @@ class AirtableMottoStorage(MottoStorage):
         method: Literal["post", "patch"],
         record: dict,
         session: Optional[ClientSession] = None,
-    ):
+    ) -> dict:
         async def run_insert(session_to_use: ClientSession):
             data = {"fields": record}
             async with session_to_use.request(
@@ -252,8 +252,8 @@ class AirtableMottoStorage(MottoStorage):
 
     async def _insert(
         self, url: str, record: dict, session: Optional[ClientSession] = None
-    ):
-        await self._modify(url, "post", record, session)
+    ) -> dict:
+        return await self._modify(url, "post", record, session)
 
     async def _update(
         self, url: str, record: dict, session: Optional[ClientSession] = None
@@ -332,8 +332,8 @@ class AirtableMottoStorage(MottoStorage):
 
     async def insert_member(
         self, motto_record: dict, session: Optional[ClientSession] = None
-    ):
-        await self._insert(self.members_url, motto_record, session)
+    ) -> dict:
+        return await self._insert(self.members_url, motto_record, session)
 
     async def update_motto(
         self,
