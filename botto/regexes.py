@@ -1,6 +1,7 @@
 import re
 from dataclasses import dataclass
 from re import Pattern
+from typing import Union
 
 from food import FoodLookups
 
@@ -30,7 +31,7 @@ class SuggestionRegexes:
 laugh_emojis = "[😆😂🤣]"
 
 
-def compile_regexes(bot_user_id: str, config: dict) -> SuggestionRegexes:
+def compile_regexes(bot_user_id: Union[str, int], config: dict) -> SuggestionRegexes:
     self_id = rf"<@!?{bot_user_id}>"
 
     line_break_matcher = "[\t\n\r\v]"
