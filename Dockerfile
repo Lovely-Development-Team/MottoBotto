@@ -1,7 +1,7 @@
 FROM python:3.9-alpine
 LABEL org.opencontainers.image.source=https://github.com/Lovely-Development-Team/MottoBotto
 
-RUN apk add --no-cache gcc musl-dev
+RUN apk add --no-cache gcc musl-dev git
 
 COPY requirements.txt .
 
