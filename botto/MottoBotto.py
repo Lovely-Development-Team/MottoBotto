@@ -13,6 +13,7 @@ import discord
 from discord import Message, DeletedReferencedMessage, Guild
 
 import reactions
+from dm_helpers import get_dm_channel
 from regexes import SuggestionRegexes, compile_regexes
 from message_checks import is_botto, is_dm
 
@@ -399,7 +400,7 @@ class MottoBotto(discord.Client):
         await message.channel.trigger_typing()
 
         message_content = message.content.lower().strip()
-
+        dm_channel = await get_dm_channel(message.author)
         if message_content in ("!help", "help", "help!", "halp", "halp!", "!halp"):
             trigger = (
                 f"@{self.user.display_name}"
@@ -438,14 +439,14 @@ You can DM me the following commands:
                     message_add = f"{message_add} DM one of the following users: {users}. They are happy to receive your DMs about MottoBotto without prior permission but otherwise usual rules apply"
                 help_message = f"{help_message}\n{message_add}."
 
-            await message.author.dm_channel.send(help_message)
+            await dm_channel.send(help_message)
             return
 
         if message_content == "!leaderboard":
             leaders = await self.storage.get_leaders(count=5)
 
             if not leaders:
-                await message.author.dm_channel.send(
+                await dm_channel.send(
                     "There doesn't appear to be anybody on the leaderboard!"
                 )
                 return
@@ -464,7 +465,7 @@ You can DM me the following commands:
                 if previous_count != leader.motto_count:
                     previous_count = leader.motto_count
                     previous_position = position
-            await message.author.dm_channel.send(leaders_message)
+            await dm_channel.send(leaders_message)
             return
 
         if message_content == "!version":
@@ -486,7 +487,7 @@ You can DM me the following commands:
             response = f"Version: {git_version}"
             if bot_id := self.config["id"]:
                 response = f"{response} ({bot_id})"
-            await message.author.dm_channel.send(response)
+            await dm_channel.send(response)
             return
 
         if message_content.startswith("!random"):
@@ -502,19 +503,19 @@ You can DM me the following commands:
                 except re.error:
                     partial_regex = None
 
-            async with message.author.dm_channel.typing():
+            async with dm_channel.typing():
                 random_motto = await self.storage.get_random_motto(search=partial, search_regex=partial_regex)
                 if not random_motto:
                     await message.author.dm_channel.send("Sorry mate, I'm all out.")
                     return
-                await message.author.dm_channel.send(
+                await dm_channel.send(
                     f"> {'> '.join(random_motto.motto.splitlines())}\n"
                     f"—{random_motto.member.display_name}"
                 )
             return
 
         if message_content == "!link" and self.config["leaderboard_link"] is not None:
-            await message.author.dm_channel.send(self.config["leaderboard_link"])
+            await dm_channel.send(self.config["leaderboard_link"])
             return
 
         if message_content.startswith("!nick"):
@@ -524,18 +525,18 @@ You can DM me the following commands:
                 option = None
             if option == "on":
                 await self.storage.set_nick_option(message.author, on=True)
-                await message.author.dm_channel.send(
+                await dm_channel.send(
                     "The leaderboard will now display your server-specific nickname instead of your Discord username. "
                     "To return to your username, type `!nick off`. "
                 )
             elif option == "off":
                 await self.storage.set_nick_option(message.author, on=False)
-                await message.author.dm_channel.send(
+                await dm_channel.send(
                     "The leaderboard will now display your Discord username instead of your server-specific nickname. "
                     "To return to your nickname, type `!nick on`. "
                 )
             else:
-                await message.author.dm_channel.send(
+                await dm_channel.send(
                     "To display your server-specific nickname on the leaderboard, type `!nick on`. To use your "
                     "Discord username, type `!nick off`. "
                 )
