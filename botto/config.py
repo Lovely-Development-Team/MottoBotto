@@ -91,6 +91,8 @@ def parse(config):
             "party": ["🎉", "🎂", "🎈", "🥳", "🍾", "🎁", "🎊", "🪅", "👯", "🎆", "🎇"],
             "cow": ["🐮", "🐄"],
             "delete_confirmed": "✅",
+            "sleep": "😴",
+            "wave": "👋",
         },
         "food": food.default_config,
         "special_reactions": {},
@@ -108,6 +110,7 @@ def parse(config):
         "watching_status": "for inspiration",
         "minimum_random_interval_minutes": 5,
         "minimum_random_interval_minutes_per_user": 30,
+        "maintainer_ids": ["328674204780068864"],
     }
 
     for key in defaults.keys():
@@ -147,5 +150,11 @@ def parse(config):
 
     if should_reply := os.getenv("MOTTOBOTTO_SHOULD_REPLY"):
         defaults["should_reply"] = should_reply.lower() == "true"
+
+    if maintainer_ids := decode_base64_env("MOTTOBOTTO_MAINTAINER_IDS"):
+        defaults["maintainer_ids"] = maintainer_ids
+
+    defaults["maintainer_ids"] = set(defaults["maintainer_ids"])
+    log.info(f"Maintainer IDs: {defaults['maintainer_ids']}")
 
     return defaults

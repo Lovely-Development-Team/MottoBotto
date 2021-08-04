@@ -26,9 +26,13 @@ class SuggestionRegexes:
     party: Pattern
     cow: Pattern
     tags: TagRegexes
+    maintenance_down: Pattern
+    maintenance_up: Pattern
 
 
 laugh_emojis = "[😆😂🤣]"
+
+dots = "(?:…|\.{3,4})"
 
 
 def compile_regexes(bot_user_id: Union[str, int], config: dict) -> SuggestionRegexes:
@@ -89,5 +93,7 @@ def compile_regexes(bot_user_id: Union[str, int], config: dict) -> SuggestionReg
         tags=TagRegexes(
             random=re.compile(r"^!random\s*(.*)"),
         ),
+        maintenance_down=re.compile(rf"{self_id}\s+Going down in 3{dots}2{dots}1{dots}\s*", re.IGNORECASE),
+        maintenance_up=re.compile(rf"Welcome back\s+{self_id}\s*", re.IGNORECASE)
     )
     return regexes

@@ -132,7 +132,9 @@ async def stored(botto: MottoBotto, message: Message, motto_message: Message):
         str(motto_message.author.id)
     ):
         chosen_special_reactions = random.choice(special_reactions)
-        log.info(f"Special reaction {chosen_special_reactions} triggered for motto from {motto_message.author.id}")
+        log.info(
+            f"Special reaction {chosen_special_reactions} triggered for motto from {motto_message.author.id}"
+        )
         await message.add_reaction(chosen_special_reactions)
     log.debug("Reaction added")
     if botto.config["should_reply"]:
@@ -174,3 +176,13 @@ async def off_topic(botto: MottoBotto, message: Message):
 async def unknown_dm(botto: MottoBotto, message: Message):
     log.info(f"I don't know how to handle {message.content} from {message.author}")
     await message.add_reaction(botto.config["reactions"]["unknown"])
+
+
+async def sleep(botto: MottoBotto, message: Message):
+    log.info(f"Sleeping to {message.author}'s message (ID: {message.id})")
+    await message.add_reaction(botto.config["reactions"]["sleep"])
+
+
+async def wave(botto: MottoBotto, message: Message):
+    log.info(f"Waving to {message.author}'s message (ID: {message.id})")
+    await message.add_reaction(botto.config["reactions"]["wave"])
