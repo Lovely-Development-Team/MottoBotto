@@ -322,6 +322,9 @@ class MottoBotto(discord.Client):
         if not trigger:
             if message.content.strip().lower() in ("i am 🐌", "i am snail"):
                 await reactions.snail(self, message)
+            if str(message.author.id) in self.config["maintainer_ids"] and self.regexes.maintenance_up.match(
+                    message.content):
+                await reactions.wave(self, message)
             return
 
         if is_botto(message, self.user):
@@ -329,7 +332,11 @@ class MottoBotto(discord.Client):
             return
 
         if not message.reference:
-            await reactions.not_reply(self, message)
+            if str(message.author.id) in self.config["maintainer_ids"] and self.regexes.maintenance_down.match(
+                    message.content):
+                await reactions.sleep(self, message)
+            else:
+                await reactions.not_reply(self, message)
             return
 
         motto_message: Message = message.reference.resolved
