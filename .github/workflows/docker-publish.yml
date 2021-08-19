@@ -151,6 +151,7 @@ jobs:
             -e MOTTOBOTTO_TRIGGERS='${{ secrets.TRIGGERS }}'
             -e MOTTOBOTTO_ID='Capys-hosted BabyBotto'
             -e MOTTOBOTTO_SHOULD_REPLY='${{ secrets.SHOULD_REPLY }}'
+            -e MOTTOBOTTO_RANDOM_MOTTO_SOURCE_VIEW='${{ secrets.RANDOM_MOTTO_SOURCE_VIEW }}'
             -e MOTTOBOTTO_MAINTAINER_IDS='${{ secrets.MAINTAINER_IDS }}'
             -e MOTTOBOTTO_VERSION='${{ env.RELEASE_VERSION }}'
             --name baby_botto ghcr.io/lovely-development-team/${{ env.IMAGE_NAME }}:latest
