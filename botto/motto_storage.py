@@ -125,7 +125,7 @@ class AirtableMottoStorage(MottoStorage):
         airtable_base: str,
         airtable_key: str,
         bot_id: Optional[str],
-        random_motto_source_view: str
+        random_motto_source_view: str,
     ):
         self.airtable_key = airtable_key
         self.bot_id = bot_id
@@ -167,7 +167,7 @@ class AirtableMottoStorage(MottoStorage):
         base_url: str,
         filter_by_formula: Optional[str],
         session: Optional[ClientSession] = None,
-        view: Optional[str] = None
+        view: Optional[str] = None,
     ) -> dict:
         params = {}
         if filter_by_formula := filter_by_formula:
@@ -268,7 +268,10 @@ class AirtableMottoStorage(MottoStorage):
         await self._modify(url, "patch", record, session)
 
     async def _list_mottos(
-        self, filter_by_formula: Optional[str], session: Optional[ClientSession] = None, view: Optional[str] = None
+        self,
+        filter_by_formula: Optional[str],
+        session: Optional[ClientSession] = None,
+        view: Optional[str] = None,
     ) -> dict:
         return await self._list(self.motto_url, filter_by_formula, session, view)
 
@@ -410,14 +413,15 @@ class AirtableMottoStorage(MottoStorage):
 
         try:
             motto = Motto.from_airtable(
-                random.choice([
-                    m for m in
-                    await self._list_mottos(
-                        filter_by_formula=None,
-                        view=self.random_motto_source_view
-                    )
-                    if filter_func(m)
-                ])
+                random.choice(
+                    [
+                        m
+                        for m in await self._list_mottos(
+                            filter_by_formula=None, view=self.random_motto_source_view
+                        )
+                        if filter_func(m)
+                    ]
+                )
             )
         except IndexError:
             return
@@ -531,7 +535,7 @@ class AirtableMottoStorage(MottoStorage):
 
     async def get_leaders(self, count=10) -> list:
         members_iterator = self._list_all_members(
-                sort=["Total Points"], filter_by_formula="{Motto Count}>0"
+            sort=["Total Points"], filter_by_formula="{Motto Count}>0"
         )
         leaders = []
         leaders_fetched = 0
