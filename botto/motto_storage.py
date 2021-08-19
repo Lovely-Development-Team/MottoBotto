@@ -125,6 +125,7 @@ class AirtableMottoStorage(MottoStorage):
         airtable_base: str,
         airtable_key: str,
         bot_id: Optional[str],
+        random_motto_source_view: str
     ):
         self.airtable_key = airtable_key
         self.bot_id = bot_id
@@ -134,6 +135,7 @@ class AirtableMottoStorage(MottoStorage):
         self.members_url = "https://api.airtable.com/v0/{base}/Member".format(
             base=airtable_base
         )
+        self.random_motto_source_view = random_motto_source_view
         self.auth_header = {"Authorization": f"Bearer {self.airtable_key}"}
         self.semaphore = asyncio.Semaphore(5)
 
@@ -163,10 +165,15 @@ class AirtableMottoStorage(MottoStorage):
     async def _list(
         self,
         base_url: str,
-        filter_by_formula: str,
+        filter_by_formula: Optional[str],
         session: Optional[ClientSession] = None,
+        view: Optional[str] = None
     ) -> dict:
-        params = {"filterByFormula": filter_by_formula}
+        params = {}
+        if filter_by_formula := filter_by_formula:
+            params.update({"filterByFormula": filter_by_formula})
+        if view := view:
+            params.update({"view": view})
         response = await self._get(base_url, params, session)
         return response.get("records", [])
 
@@ -261,9 +268,9 @@ class AirtableMottoStorage(MottoStorage):
         await self._modify(url, "patch", record, session)
 
     async def _list_mottos(
-        self, filter_by_formula: str, session: Optional[ClientSession] = None
+        self, filter_by_formula: Optional[str], session: Optional[ClientSession] = None, view: Optional[str] = None
     ) -> dict:
-        return await self._list(self.motto_url, filter_by_formula, session)
+        return await self._list(self.motto_url, filter_by_formula, session, view)
 
     async def _list_members(
         self, filter_by_formula: str, session: Optional[ClientSession] = None
@@ -406,7 +413,8 @@ class AirtableMottoStorage(MottoStorage):
                 random.choice([
                     m for m in
                     await self._list_mottos(
-                        filter_by_formula="{Approved by Author}=TRUE()"
+                        filter_by_formula=None,
+                        view=self.random_motto_source_view
                     )
                     if filter_func(m)
                 ])

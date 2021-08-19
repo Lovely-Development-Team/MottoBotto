@@ -31,6 +31,7 @@ storage = AirtableMottoStorage(
     config["authentication"]["airtable_base"],
     config["authentication"]["airtable_key"],
     config["id"],
+    config["random_source_view"]
 )
 
 client = MottoBotto(config, storage)
