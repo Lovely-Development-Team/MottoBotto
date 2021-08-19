@@ -110,6 +110,7 @@ def parse(config):
         "watching_status": "for inspiration",
         "minimum_random_interval_minutes": 5,
         "minimum_random_interval_minutes_per_user": 30,
+        "random_source_view": "Display",
         "maintainer_ids": ["328674204780068864"],
     }
 
@@ -154,6 +155,10 @@ def parse(config):
     if maintainer_ids := decode_base64_env("MOTTOBOTTO_MAINTAINER_IDS"):
         defaults["maintainer_ids"] = maintainer_ids
 
+    if random_source_view := os.getenv("MOTTOBOTTO_RANDOM_MOTTO_SOURCE_VIEW"):
+        defaults["random_source_view"] = random_source_view
+
+    log.info(f"Random motto source view: {defaults['random_source_view']}")
     defaults["maintainer_ids"] = set(defaults["maintainer_ids"])
     log.info(f"Maintainer IDs: {defaults['maintainer_ids']}")
 
