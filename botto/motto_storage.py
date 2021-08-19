@@ -399,7 +399,7 @@ class AirtableMottoStorage(MottoStorage):
         if search_regex:
             filter_func = lambda x: search_regex.search(x["fields"]["Motto"])
         elif search:
-            fitler_func = lambda x: search.lower() in x["fields"]["Motto"].lower()
+            filter_func = lambda x: search.lower() in x["fields"]["Motto"].lower()
 
         try:
             motto = Motto.from_airtable(
