@@ -300,10 +300,36 @@ class MottoBotto(discord.Client):
 
         log.info(f"Tagged message incoming: {message.content} / {content}")
 
-        if not content:
+        if self.config["wave_on_tag"] and not content:
             await reactions.wave(self, message)
             return
-        return
+
+        if not self.config["allow_random_in_server"]:
+            return
+
+        content = content[0].strip()
+
+        if partial := self.regexes.tags.random.findall(content):
+
+            log.info(f"Call to !random with regex: {partial!r} from {message.author}")
+
+            if not self.is_random_request_allowed(message.author):
+                await reactions.rate_limit(self, message)
+                return
+
+            partial = partial[0]
+            try:
+                partial_regex = re.compile(partial, re.IGNORECASE)
+            except re.error:
+                partial_regex = None
+
+            async with message.channel.typing():
+                motto = await self.storage.get_random_motto(search=partial, search_regex=partial_regex)
+                log.info(f"Got random motto! {motto}")
+                if not motto:
+                    await reactions.shrug(self, message)
+                else:
+                    await message.reply(f"{motto.motto}—{motto.member.display_name}")
 
     @property
     def triggers(self):
@@ -313,6 +339,11 @@ class MottoBotto(discord.Client):
         return triggers
 
     async def process_suggestion(self, message: Message):
+
+        if (result := self.regexes.tag.findall(message.content)) and not message.reference:
+            await self.process_tag(message, result)
+            return
+
         trigger = None
         for t in self.triggers:
             if t.match(message.content):

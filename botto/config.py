@@ -108,8 +108,10 @@ def parse(config):
         "confirm_delete_reaction": "🧨",
         "support_channel": None,
         "watching_status": "for inspiration",
+        "allow_random_in_server": False,
         "minimum_random_interval_minutes": 5,
         "minimum_random_interval_minutes_per_user": 30,
+        "wave_on_tag": False,
         "random_source_view": "Display",
         "maintainer_ids": ["328674204780068864"],
     }
@@ -157,6 +159,12 @@ def parse(config):
 
     if random_source_view := os.getenv("MOTTOBOTTO_RANDOM_MOTTO_SOURCE_VIEW"):
         defaults["random_source_view"] = random_source_view
+
+    if allow_random_in_server := os.getenv("MOTTOBOTTO_ALLOW_RANDOM_IN_SERVER"):
+        defaults["allow_random_in_server"] = allow_random_in_server.lower() == "true"
+
+    if wave_on_tag := os.getenv("MOTTOBOTTO_WAVE_ON_TAG"):
+        defaults["wave_on_tag"] = wave_on_tag.lower() == "true"
 
     log.info(f"Random motto source view: {defaults['random_source_view']}")
     defaults["maintainer_ids"] = set(defaults["maintainer_ids"])
