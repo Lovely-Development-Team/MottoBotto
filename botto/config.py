@@ -163,6 +163,12 @@ def parse(config):
     if allow_random_in_server := os.getenv("MOTTOBOTTO_ALLOW_RANDOM_IN_SERVER"):
         defaults["allow_random_in_server"] = allow_random_in_server.lower() == "true"
 
+    if minimum_random_interval_minutes := os.getenv("MOTTOBOTTO_MINIMUM_RANDOM_INTERVAL_MINUTES"):
+        defaults["minimum_random_interval_minutes"] = int(minimum_random_interval_minutes)
+
+    if minimum_random_interval_minutes_per_user := os.getenv("MOTTOBOTTO_MINIMUM_RANDOM_INTERVAL_MINUTES_PER_USER"):
+        defaults["minimum_random_interval_minutes_per_user"] = int(minimum_random_interval_minutes_per_user)
+
     if wave_on_tag := os.getenv("MOTTOBOTTO_WAVE_ON_TAG"):
         defaults["wave_on_tag"] = wave_on_tag.lower() == "true"
 
