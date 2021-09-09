@@ -61,7 +61,7 @@ jobs:
     # Ensure test job passes before pushing image.
     needs: test
 
-    environment: Baby
+    concurrency: Baby
 
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_run'
@@ -116,6 +116,9 @@ jobs:
   deploy:
     # Ensure test job passes before pushing image.
     needs: push
+
+    environment: Baby
+    concurrency: Baby
 
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_run'
