@@ -228,7 +228,7 @@ class MottoBotto(discord.Client):
         await self.remove_unapproved_messages()
 
     def clean_trigger_message(self, trigger, message) -> str:
-        return trigger.sub("", message).strip().strip("'\"”“")
+        return trigger.sub("", message).strip().strip("'\"”“").strip()
 
     def clean_message(self, actual_motto: str, guild: Guild) -> str:
 
