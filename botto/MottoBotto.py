@@ -378,7 +378,7 @@ class MottoBotto(discord.Client):
         log.info(f"Trigger message content: {trigger_message_content!r}")
 
         if trigger_message_content and trigger_message_content not in motto_message.content:
-            log.info(f"Quoted exerpt {trigger_message_content!r} not found in existing message {motto_message.content!r}")
+            log.info(f"Quoted excerpt {trigger_message_content!r} not found in existing message {motto_message.content!r}")
             await reactions.not_reply(self, message)
             return
 
