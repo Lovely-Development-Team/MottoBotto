@@ -1,4 +1,4 @@
-git+https://github.com/Rapptz/discord.py/@fc51736
+git+https://github.com/Lovely-Development-Team/discord.py/@e5d3968
 airtable-python-wrapper<0.16
 emoji==1.2.0
 python-dateutil
