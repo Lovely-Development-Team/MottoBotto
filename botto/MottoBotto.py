@@ -156,7 +156,7 @@ class MottoBotto(discord.Client):
                     trigger_message_content = remove_markdown(trigger_message_content)
                     actual_trigger_start = re.search("^\w+", trigger_message_content).group()
                     actual_trigger_end = re.search("\S+$", trigger_message_content).group()
-                    trigger_message_content = re.search(actual_trigger_start + ".*" + actual_trigger_end, motto_message.content)
+                    trigger_message_content = re.search(actual_trigger_start + ".*" + actual_trigger_end, motto_message.content).group()
                 actual_motto = self.clean_message(trigger_message_content, message.guild)
 
             else:
