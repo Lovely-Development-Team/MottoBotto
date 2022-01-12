@@ -6,6 +6,7 @@ import datetime
 import re
 from typing import Optional
 
+from discord.utils import remove_markdown
 from emoji import UNICODE_EMOJI
 import subprocess
 
@@ -146,7 +147,7 @@ class MottoBotto(discord.Client):
             log.info(f"Trigger message content: {trigger_message_content!r}")
 
             if trigger_message_content:
-                if trigger_message_content not in motto_message.content:
+                if trigger_message_content not in motto_message.content or trigger_message_content not in remove_markdown(motto_message.content):
                     log.info(f"Ignoring approval on quoted exerpt {trigger_message_content!r} not found in existing message {motto_message.content!r}")
                     return
                 actual_motto = self.clean_message(trigger_message_content, message.guild)
