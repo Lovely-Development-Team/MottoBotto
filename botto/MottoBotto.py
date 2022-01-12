@@ -147,9 +147,16 @@ class MottoBotto(discord.Client):
             log.info(f"Trigger message content: {trigger_message_content!r}")
 
             if trigger_message_content:
-                if trigger_message_content not in motto_message.content or trigger_message_content not in remove_markdown(motto_message.content):
+                match = trigger_message_content in motto_message.content
+                plain_match = remove_markdown(trigger_message_content) in remove_markdown(motto_message.content)
+                if not match or not plain_match:
                     log.info(f"Ignoring approval on quoted exerpt {trigger_message_content!r} not found in existing message {motto_message.content!r}")
                     return
+                if plain_match:
+                    trigger_message_content = remove_markdown(trigger_message_content)
+                    actual_trigger_start = re.search("^\w+", trigger_message_content).group()
+                    actual_trigger_end = re.search("\S+$", trigger_message_content).group()
+                    trigger_message_content = re.search(actual_trigger_start + ".*" + actual_trigger_end, motto_message.content)
                 actual_motto = self.clean_message(trigger_message_content, message.guild)
 
             else:
