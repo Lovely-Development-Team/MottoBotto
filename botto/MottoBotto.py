@@ -50,7 +50,12 @@ class MottoBotto(discord.Client):
             else "Replies are disabled"
         )
         log.info("Responding to phrases: %s", self.config["triggers"])
+        log.debug("Watching channels: %s", self.config["channels"])
         log.info("Rules: %s", self.config["rules"])
+        log.debug("Minimum Random Interval: {interval} minutes"
+                  .format(interval=self.config["minimum_random_interval_minutes_per_user"]))
+        log.debug("Minimum Random Interval Per User: {interval} minutes"
+                  .format(interval=self.config["minimum_random_interval_minutes_per_user"]))
 
         self.regexes: Optional[SuggestionRegexes] = None
 
