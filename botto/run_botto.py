@@ -12,6 +12,12 @@ logging.getLogger("discord").setLevel(logging.CRITICAL)
 logging.getLogger("discord.gateway").setLevel(logging.INFO)
 logging.getLogger("asyncio").setLevel(logging.CRITICAL)
 logging.getLogger("urllib").setLevel(logging.CRITICAL)
+if should_log_to_file := os.getenv("LOG_TO_FILE"):
+    if should_log_to_file == "false":
+        logging.info("LOG_TO_FILE is false, removing FileHandlers")
+        file_handlers = (handler for handler in logging.root.handlers if isinstance(handler, logging.FileHandler))
+        for handler in file_handlers:
+            logging.root.removeHandler(handler)
 log = logging.getLogger("MottoBotto")
 
 try:
