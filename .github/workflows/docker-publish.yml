@@ -26,11 +26,11 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Load docker image from cache
         id: cache-docker
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: /tmp/docker-save
           key: docker-save-motto-${{ hashFiles('Dockerfile') }}
@@ -73,11 +73,11 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Load docker image from cache
         id: cache-docker
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: /tmp/docker-save
           key: docker-save-motto-${{ hashFiles('Dockerfile') }}
@@ -137,7 +137,7 @@ jobs:
           k8s-secret: ${{ secrets.DISCORD_BOTS_KUBERNETES_SECRET }}
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
