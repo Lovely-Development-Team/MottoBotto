@@ -33,3 +33,10 @@ spec:
             value: ${MOTTOBOTTO_VERSION}
           - name: LOG_TO_FILE
             value: "false"
+        resources:
+          requests:
+            cpu: 20m
+            memory: 50Mi
+          limits:
+            cpu: 20m
+            memory: 100Mi
