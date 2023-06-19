@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: baby-botto
+  namespace: discord-bots
+  labels:
+    app.kubernetes.io/name: MottoBotto
+    app.kubernetes.io/instance: BabyBotto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: MottoBotto
+      app.kubernetes.io/instance: BabyBotto
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: MottoBotto
+        app.kubernetes.io/instance: BabyBotto
+    spec:
+      containers:
+      - name: bot
+        image: ghcr.io/lovely-development-team/${IMAGE_NAME}:latest
+        envFrom:
+          - configMapRef:
+              name: baby-botto
+          - secretRef:
+              name: baby-botto
+        env:
+          - name: MOTTOBOTTO_VERSION
+            value: ${MOTTOBOTTO_VERSION}

@@ -5,6 +5,7 @@ on:
     # Publish `develop` as Docker `latest` image.
     branches:
       - develop
+      - test-k8s-deployment
 
     # Publish `v1.2.3` tags as releases.
     tags:
@@ -128,6 +129,13 @@ jobs:
       packages: read
 
     steps:
+      - name: Set the Kubernetes context
+        uses: azure/k8s-set-context@v3
+        with:
+          method: service-account
+          k8s-url: https://ef264a96-6984-4745-9cd8-dba4192ae195.us-east-1.linodelke.net:443
+          k8s-secret: ${{ secrets.DISCORD_BOTS_KUBERNETES_SECRET }}
+
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -137,30 +145,36 @@ jobs:
         run: echo "RELEASE_VERSION=`git describe --tags`" >> $GITHUB_ENV
         continue-on-error: true
 
-      - name: Start MottoBotto
-        uses: appleboy/ssh-action@v0.1.4
+      - name: Set secrets
+        uses: azure/k8s-create-secret@v4
+        with:
+          namespace: 'discord-bots'
+          secret-name: 'baby-botto'
+          secret-type: 'Opaque'
+          string-data: '{"MOTTOBOTTO_DISCORD_TOKEN":"${{ secrets.DISCORD_TOKEN }}", "MOTTOBOTTO_AIRTABLE_BASE": "${{ secrets.AIRTABLE_BASE }}", "MOTTOBOTTO_AIRTABLE_KEY": "${{ secrets.AIRTABLE_KEY }}"}'
+
+      - name: Substitute env into templates
+        run: |
+          cat kubernetes/babybotto-config.tpl.yaml | envsubst > kubernetes/babybotto-config.yaml &&
+          cat kubernetes/deployment.tpl.yaml | envsubst > kubernetes/deployment.yaml
         env:
-          HOST: ${{ secrets.DEPLOY_HOST }}
-          USERNAME: ${{ secrets.DEPLOY_USERNAME }}
-          PASSPHRASE: ${{ secrets.DEPLOY_SSHKEY_PASSPHRASE }}
-          KEY: ${{ secrets.DEPLOY_SSHKEY }}
-          SCRIPT: >
-            docker pull ghcr.io/lovely-development-team/${{ env.IMAGE_NAME }}:latest &&
-            docker stop baby_botto || true &&
-            docker rm baby_botto || true &&
-            docker run -d -t --restart unless-stopped
-            -e MOTTOBOTTO_DISCORD_TOKEN='${{ secrets.DISCORD_TOKEN }}'
-            -e MOTTOBOTTO_AIRTABLE_BASE='${{ secrets.AIRTABLE_BASE }}'
-            -e MOTTOBOTTO_AIRTABLE_KEY='${{ secrets.AIRTABLE_KEY }}'
-            -e MOTTOBOTTO_CHANNELS='${{ secrets.CHANNELS }}'
-            -e MOTTOBOTTO_TRIGGERS='${{ secrets.TRIGGERS }}'
-            -e MOTTOBOTTO_ID='Capys-hosted BabyBotto'
-            -e MOTTOBOTTO_SHOULD_REPLY='${{ secrets.SHOULD_REPLY }}'
-            -e MOTTOBOTTO_ALLOW_RANDOM_IN_SERVER='${{ secrets.ALLOW_RANDOM_IN_SERVER }}'
-            -e MOTTOBOTTO_MINIMUM_RANDOM_INTERVAL_MINUTES='${{ secrets.MINIMUM_RANDOM_INTERVAL_MINUTES }}'
-            -e MOTTOBOTTO_MINIMUM_RANDOM_INTERVAL_MINUTES_PER_USER='${{ secrets.MINIMUM_RANDOM_INTERVAL_MINUTES_PER_USER }}'
-            -e MOTTOBOTTO_WAVE_ON_TAG='${{ secrets.WAVE_ON_TAG }}'
-            -e MOTTOBOTTO_RANDOM_MOTTO_SOURCE_VIEW='${{ secrets.RANDOM_MOTTO_SOURCE_VIEW }}'
-            -e MOTTOBOTTO_MAINTAINER_IDS='${{ secrets.MAINTAINER_IDS }}'
-            -e MOTTOBOTTO_VERSION='${{ env.RELEASE_VERSION }}'
-            --name baby_botto ghcr.io/lovely-development-team/${{ env.IMAGE_NAME }}:latest
+          MOTTOBOTTO_CHANNELS: ${{ secrets.CHANNELS }}
+          MOTTOBOTTO_TRIGGERS: ${{ vars.TRIGGERS }}
+          MOTTOBOTTO_ALLOW_RANDOM_IN_SERVER: ${{ vars.ALLOW_RANDOM_IN_SERVER }}
+          MOTTOBOTTO_MINIMUM_RANDOM_INTERVAL_MINUTES: ${{ vars.MINIMUM_RANDOM_INTERVAL_MINUTES }}
+          MOTTOBOTTO_MINIMUM_RANDOM_INTERVAL_MINUTES_PER_USER: ${{ vars.MINIMUM_RANDOM_INTERVAL_MINUTES_PER_USER }}
+          MOTTOBOTTO_WAVE_ON_TAG: ${{ vars.WAVE_ON_TAG }}
+          MOTTOBOTTO_RANDOM_MOTTO_SOURCE_VIEW: ${{ vars.RANDOM_MOTTO_SOURCE_VIEW }}
+          MOTTOBOTTO_MAINTAINER_IDS: ${{ vars.MAINTAINER_IDS }}
+          MOTTOBOTTO_VERSION: ${{ env.RELEASE_VERSION }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+
+      - name: Deploy to the Kubernetes cluster
+        uses: azure/k8s-deploy@v4
+        with:
+          namespace: discord-bots
+          manifests: |
+            kubernetes/babybotto-config.yaml
+            kubernetes/deployment.yaml
+          images: |
+            ghcr.io/lovely-development-team/${{ env.IMAGE_NAME }}:latest
