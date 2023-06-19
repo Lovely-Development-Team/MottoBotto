@@ -6,6 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: MottoBotto
     app.kubernetes.io/instance: BabyBotto
+    app.kubernetes.io/version: ${MOTTOBOTTO_VERSION}
 spec:
   replicas: 1
   selector:
@@ -17,6 +18,7 @@ spec:
       labels:
         app.kubernetes.io/name: MottoBotto
         app.kubernetes.io/instance: BabyBotto
+        app.kubernetes.io/version: ${MOTTOBOTTO_VERSION}
     spec:
       containers:
       - name: bot
