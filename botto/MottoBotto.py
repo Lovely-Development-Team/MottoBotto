@@ -477,15 +477,30 @@ You can DM me the following commands:
 `!delete`: Remove all your data from MottoBotto. Confirmation is required.
 """.strip()
 
-            help_channel = self.config["support_channel"]
+            help_channel: Optional[str] = None
+            if help_channel_name_or_id := self.config["support_channel"]:
+                try:
+                    # First attempt to get the channel by id, as that is more efficient
+                    channel_id = int(help_channel_name_or_id)
+                    help_channel = self.get_channel(channel_id).mention
+                # `help_channel_name_or_id` is not convertible to int or channel not found
+                except ValueError or AttributeError:
+                    # Search for the channel by name (this could get quite slow if we're in a lot of channels!)
+                    if named_help_channel := next(
+                            channel for channel in self.get_all_channels() if channel.name == help_channel_name_or_id):
+                        help_channel = named_help_channel.mention
+                    else:
+                        # Fallback to plain text
+                        help_channel = f"#{help_channel_name_or_id}"
+
             users = ", ".join(
                 f"<@{user.discord_id}>" for user in await self.storage.get_support_users()
             )
 
             if help_channel or users:
                 message_add = "\nIf your question was not answered here, please"
-                if help_channel:
-                    message_add = f"{message_add} ask for help in #{help_channel}"
+                if help_channel_name_or_id:
+                    message_add = f"{message_add} ask for help in {help_channel}"
                     if users:
                         message_add = f"{message_add}, or"
                 if users:
