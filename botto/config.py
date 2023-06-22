@@ -157,6 +157,9 @@ def parse(config):
     if maintainer_ids := decode_base64_env("MOTTOBOTTO_MAINTAINER_IDS"):
         defaults["maintainer_ids"] = maintainer_ids
 
+    if support_channel := os.getenv("MOTTOBOTTO_SUPPORT_CHANNEL"):
+        defaults["support_channel"] = support_channel
+
     if random_source_view := os.getenv("MOTTOBOTTO_RANDOM_MOTTO_SOURCE_VIEW"):
         defaults["random_source_view"] = random_source_view
 
