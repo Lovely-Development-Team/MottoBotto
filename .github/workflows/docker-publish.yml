@@ -144,14 +144,6 @@ jobs:
         run: echo "RELEASE_VERSION=`git describe --tags`" >> $GITHUB_ENV
         continue-on-error: true
 
-      - name: Set secrets
-        uses: azure/k8s-create-secret@v4
-        with:
-          namespace: 'discord-bots'
-          secret-name: 'baby-botto'
-          secret-type: 'Opaque'
-          string-data: '{"MOTTOBOTTO_DISCORD_TOKEN":"${{ secrets.DISCORD_TOKEN }}", "MOTTOBOTTO_AIRTABLE_BASE": "${{ secrets.AIRTABLE_BASE }}", "MOTTOBOTTO_AIRTABLE_KEY": "${{ secrets.AIRTABLE_KEY }}"}'
-
       - name: Substitute env into templates
         run: |
           cat kubernetes/babybotto-config.tpl.yaml | envsubst > kubernetes/babybotto-config.yaml &&
@@ -165,6 +157,7 @@ jobs:
           MOTTOBOTTO_WAVE_ON_TAG: ${{ vars.WAVE_ON_TAG }}
           MOTTOBOTTO_RANDOM_MOTTO_SOURCE_VIEW: ${{ vars.RANDOM_MOTTO_SOURCE_VIEW }}
           MOTTOBOTTO_MAINTAINER_IDS: ${{ vars.MAINTAINER_IDS }}
+          AIRTABLE_BASE: ${{ vars.AIRTABLE_BASE }}
           MOTTOBOTTO_VERSION: ${{ env.RELEASE_VERSION }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
 
