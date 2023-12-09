@@ -7,6 +7,10 @@ metadata:
     app.kubernetes.io/name: MottoBotto
     app.kubernetes.io/instance: BabyBotto
     app.kubernetes.io/version: ${MOTTOBOTTO_VERSION}
+  annotations:
+    operator.1password.io/item-path: "vaults/du4s3tc4ab7wnrijmb5fxjpbse/items/BabyBotto Credentials"
+    operator.1password.io/item-name: "babybotto-credentials"
+    operator.1password.io/auto-restart: "true"
 spec:
   replicas: 1
   selector:
@@ -27,7 +31,7 @@ spec:
           - configMapRef:
               name: baby-botto
           - secretRef:
-              name: baby-botto
+              name: babybotto-credentials
         env:
           - name: MOTTOBOTTO_VERSION
             value: ${MOTTOBOTTO_VERSION}
